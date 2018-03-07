@@ -71,7 +71,7 @@ void print_error(char **input_pt, struct Input input)
 		(*input_pt)++;
 	}
 
-	input_pt[i] = '\0';
+	input_str[i] = '\0';
 
 	*input_pt = start;
 
