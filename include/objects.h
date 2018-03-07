@@ -162,6 +162,22 @@ void fill_list_pt(char **pt, char *str)
 /* Функции общего назначения. */
 
 /* 
+	double pow(double num, double exp);
+
+	Функция pow.
+		Рекурсивно возводит число num в степень exp.
+*/
+double pow(double num, double exp)
+{
+	if (exp == 1)
+		return num;
+
+	else
+		return num * pow(num, exp - 1);
+}
+
+
+/* 
 	int is_digit(char elem);
 
 	Функция is_digit.
@@ -308,6 +324,9 @@ double get_subtotal(double subtotal, struct Input input)
 
 		case '/':
 			return subtotal / input.new_num;
+
+		case '^':
+			return pow(subtotal, input.new_num);
 	}
 }
 
