@@ -43,7 +43,7 @@ struct Input // структура для хранения данных об inp
 */
 void print_help()
 {
-	printf("Acceptable operators are follows:\n  +\n  -\n  *\n  /\n  ^\n  =\n");
+	printf("Acceptable operators are follows:\n  +\n  -\n  *\n  /\n  ^\n  %\n  =\n");
 	return;
 }
 
@@ -174,6 +174,14 @@ double pow(double num, double exp)
 
 	else
 		return num * pow(num, exp - 1);
+}
+
+double get_percentage(double subtotal, double new_num) // (2, 50)
+{
+	// subtotal - число
+	// input.new_num - процент от числа
+	new_num /= 100.0; // 50 -> 0.5
+	return subtotal * new_num;
 }
 
 
@@ -308,8 +316,12 @@ char * query_input()
 */
 double get_subtotal(double subtotal, struct Input input)
 {
-	char opr = input.prev_operator ; // input.prev_operator_backup;
+	char opr = '\0';
 
+	if (input.current_operator == '%') // '%' не записывается в input.prev_operator, поэтому его нужно обработать отдельно
+		opr = '%';
+	else
+		opr = input.prev_operator;
 
 	switch (opr)
 	{
@@ -326,7 +338,21 @@ double get_subtotal(double subtotal, struct Input input)
 			return subtotal / input.new_num;
 
 		case '^':
-			return pow(subtotal, input.new_num);
+			// if (input.new_num < 1)
+				// return what? 
+			// else
+				return pow(subtotal, input.new_num);
+
+		case '%':
+			/* Узнать, сколько будет input.new_num процентов от subtotal: */
+			input.new_num = get_percentage(subtotal, input.new_num);
+
+			/* После этого очистить current_operator от '%', чтобы не оплошать на следующей инструкции, с рекурсией: */
+			input.current_operator = '\0';
+
+			/* Повторно вызвать данную функцию, но уже не с оператором '%' (будет использоваться предыдущий оператор:
+			'+', '-', etc): */
+			return get_subtotal(subtotal, input);
 	}
 }
 
@@ -470,7 +496,7 @@ double get_num(char **input_pt)
 int check_if_is_operator(char ***input_pt)
 {
 	/* 1. Хранилище значений: */
-	char operators_list_src[MAX_SIZE] = {'=', '+', '-', '*', '/', '^', '\0'}; // м.б., '=' вынести отсюда?
+	char operators_list_src[MAX_SIZE] = {'=', '+', '-', '*', '/', '^', '%', '\0'}; // м.б., '=' вынести отсюда?
 	char *operators_list; // будем пользоваться данным указателем вместо строки src
 	// for no particular reason, просто для разминки
 

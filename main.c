@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 			print_error(&input_pt, input);
 
 			continue;
-		}
+		} // плюс в cond запихать функцию проверки на значения pow и sqrt 
 
 		/* ... */
 		last_input.was_operator = is_operator(input.type);
@@ -125,7 +125,10 @@ int main(int argc, char *argv[])
 		}
 
 		else if (is_num(input.type))
-			input.new_num = get_num(&input_pt);
+			// if (input.current_operator == '%')
+			// 	input.new_num = get_percentage(subtotal, input.new_num);
+			// else
+				input.new_num = get_num(&input_pt);
 
 		// else if (is_mem)
 
@@ -155,21 +158,22 @@ int main(int argc, char *argv[])
 			/* Вычисления: */
 			{
 				subtotal = get_subtotal(subtotal, input);
+
+				if (input.current_operator == '%') // возможно, это ключ к решению проблемы со вводом двух 'o' подряд: '%', '='
+					input.type = 'n';
+
 			}
 		}
 
 
 
 		/* Данные о текущем input для обработки следующего. */
-		if (input.current_operator)
+		if (input.current_operator && (input.current_operator != '%')) /* '%' не записывать! В функции get_subtotal случай
+		с оператором '%' будет обрабатываться особо. */
 		{
 			input.prev_operator = input.current_operator;
 			// input.prev_operator_backup = input.current_operator;
 		}
-
-			
-
-		// input.prev_input_type = input.type;	// нужно?
 
 
 		/* Если пользователь вводит '=', цикл прерывается: */
