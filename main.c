@@ -25,7 +25,7 @@ struct Input;
 
 void print_help();
 void print_error(char **input_pt, struct Input input);
-void print_result(double subtotal);
+void print_subtotal(double subtotal, char last_operator);
 
 char get_operator(char **input_pt);
 double get_num(char **input_pt);
@@ -36,6 +36,8 @@ double reset_new_num(struct Input input);
 int is_operator(char input_type);
 int is_num(char input_type);
 int is_percent(char input_type);
+
+int check_if_is_ready_for_math(char type);
 
 /* Main */
 
@@ -69,35 +71,32 @@ int main(int argc, char *argv[])
 	double subtotal = 0.0; // промежуточный итог
 
 
+	printf("Please consistently enter what you want to calculate. Enter \"=\" to get subtotal and quit.\n");
 
-
-
-
-
-
-
-
-	printf("Enter:\n");
-
+	/* Структура для данных о последнем input. */
 	struct State last_input;
 	last_input.was_num = 0;
 	last_input.was_operator = 0;
 	last_input.was_percent = 0;
 
+	/* Структура для данных о текущем input. */
+	struct State current_input;
+	current_input.is_ready_for_math = 0;
+
 
 
 	while (*input_pt != '=')
-	// while (1)
+	// while (input.current_operator != '=')
 	{
 		/* 1. Запрос input, определение типа input (оператор 'o', число 'n', процент 'p' или unknown '\0'). */
 		input_pt = query_input();
 		input.type = identify_input(&input_pt, subtotal, input); // получаем 'o', 'n', 'p' или '\0'
 
-		printf("| | 1. subtotal? %f\n", subtotal);
-		printf("| | 2. new_num? %f\n", input.new_num);
-		printf("| | 3. current_operator? %c\n", input.current_operator);
-		printf("| | 4. prev_operator? %c\n", input.prev_operator);
-		printf("| | 5. type? %c\n\n", input.type);	
+		// printf("| | 1. subtotal? %f\n", subtotal);
+		// printf("| | 2. new_num? %f\n", input.new_num);
+		// printf("| | 3. current_operator? %c\n", input.current_operator);
+		// printf("| | 4. prev_operator? %c\n", input.prev_operator);
+		// printf("| | 5. type? %c\n\n", input.type);	
 
 
 		/* 2. Обработка некорректного input. */
@@ -113,6 +112,7 @@ int main(int argc, char *argv[])
 		/* Или: если после ввода, например, числа вводится не оператор, а опять число - т.е. input того же типа. */
 		{
 			print_error(&input_pt, input);
+
 			continue;
 		} // плюс в cond запихать функцию проверки на значения pow и sqrt 
 		/* Если input некорректный, не извлекать данные из него: прервать итерацию. */
@@ -137,31 +137,40 @@ int main(int argc, char *argv[])
 
 
 		/* 4. Обработка извлеченных данных. */
-		/* Вычисления производятся только если текущий input - оператор. */
-		if (is_operator(input.type) || is_percent(input.type))
+
+		/* 4.1. Вычисления производятся только если текущий input имеет тип 'o' или 'p'. */
+		/* Тип 'p' не вполне идентичен 'o' - участвует не во всех нижеприведенных операциях. */
+		if ( current_input.is_ready_for_math = check_if_is_ready_for_math(input.type) )
 		{
+			/* 4.2. "Инициализация" промежуточного итога subtotal. */
+			/* Очевидно, производится только 1 раз за цикл. */
 			if (!input.subtotal_is_initialized && !input.prev_operator)
-			/* "Инициализация" промежуточного итога subtotal: */
 			{
 				subtotal = input.new_num;
 				input.subtotal_is_initialized = 1;
 			}
 
+			/* 4.3. Произвести вычисления. */
+			/* Только если subtotal уже "инициализирован". */
 			else
-			/* Вычисления: */
 			{
 				subtotal = get_subtotal(subtotal, input);
 
+				/* А затем вывести на экран промежуточный итог subtotal. */
+				/* Но только если данный input имеет тип 'o' (иначе при работе с процентами будет выводиться 
+				"лишний" subtotal). */
+				if (!is_percent(input.type))
+					print_subtotal(subtotal, input.current_operator);
+				
 				/* Чтобы корректно завершить вычисления, нужно "сбросить" значение input.new_num, поскольку оно является
 				процентом: */
 				if (is_percent(input.type))
 					input.new_num = reset_new_num(input); // в зависимости от input.prev_operator присвоить 1 или 0
-
-
-
 			}
 		}
 
+		// if (is_operator(input.type))
+			
 
 
 		/* Данные о текущем input для обработки следующего. */
@@ -180,19 +189,15 @@ int main(int argc, char *argv[])
 		// }
 
 		// input.count++;
-
-
-
 	}
 
 	/* Получить результат вычислений: */
 		if (isnan(subtotal) || isinf(subtotal))
 		{
 			printf("Error in calculations.\n");
-			// print_error(&input_pt, input);
+			print_subtotal(subtotal, input.current_operator);
 		}
-		else
-			print_result(subtotal);
+			
 
 
 	return 0;

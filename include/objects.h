@@ -14,8 +14,7 @@ struct State // структура для хранения состояний (1
 {
 	unsigned int has_point : 1;
 	unsigned int has_sign : 1;
-	// unsigned int has_error : 1;
-	// unsigned int is_initialized : 1;
+	unsigned int is_ready_for_math : 1;
 	unsigned int is_num : 1;
 	unsigned int is_operator : 1;
 	unsigned int is_percent : 1;
@@ -86,7 +85,6 @@ void print_error(char **input_pt, struct Input input)
 	else if (!input.type)
 		printf("Invalid input: \"%s\". Please enter something meaningful.\n", input_str);
 
-	printf("Enter \"=\" to get subtotal and quit.\n");
 	return;
 }
 
@@ -104,6 +102,15 @@ void print_result(double subtotal)
 {
 	printf("Result is: %f\n", subtotal);
 	return;
+}
+
+
+void print_subtotal(double subtotal, char last_operator)
+{
+	if (last_operator == '=')
+		printf("Done. Result is: %f\n", subtotal);
+	else
+		printf("Subtotal is: %f\n", subtotal);
 }
 
 
@@ -654,7 +661,16 @@ int check_if_is_number(char ***input_pt)
 }
 
 
-
+/*
+...
+*/
+int check_if_is_ready_for_math(char type)
+{
+	if (type == 'o' || type == 'p')
+		return 1;
+	else
+		return 0;
+}
 
 
 /* 
