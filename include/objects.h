@@ -15,7 +15,7 @@ struct State // структура для хранения состояний (1
 {
 	unsigned int has_point : 1;
 	unsigned int has_sign : 1;
-	unsigned int is_ready_for_math : 1;
+	// unsigned int is_ready_for_math : 1;
 	unsigned int is_num : 1;
 	unsigned int is_operator : 1;
 	unsigned int is_postfix_opr : 1;
@@ -320,6 +320,17 @@ char * query_input()
 }
 
 
+
+int get_correct_exp(double exp)
+{
+	int result = exp; // int значит, что дробная часть double будет отброшена автоматически
+
+	if (exp < 0)
+		result = alter_num_sign(exp);
+
+	return result;
+}
+
 /*
 	double get_subtotal(double subtotal, struct Input input);
 
@@ -353,10 +364,19 @@ double get_subtotal(double subtotal, struct Input input)
 			return subtotal / input.new_num;
 
 		case '^':
-			// if (input.new_num < 1)
-				// return what? 
-			// else
+			if (!input.new_num)
+				return 1.0; // число в степени 0 равно 1 (если само число - не 0)
+
+			else if (!input.new_num && !subtotal)
+				return 0.0; // 0 в степени 0 путь будет... 0 (хотя, в сущности, это некорректная операция)
+
+			else
+			{
+				input.new_num = get_correct_exp(input.new_num);
+				printf("Please note that exponent's been converted into %f.\n", input.new_num);
+
 				return pow(subtotal, input.new_num);
+			}
 
 		case '%':
 			/* Узнать, сколько будет input.new_num процентов от subtotal: */
@@ -668,7 +688,7 @@ int check_if_is_number(char ***input_pt)
 /*
 ...
 */
-int check_if_is_ready_for_math(char type)
+int is_any_opr(char type)
 {
 	if (type == 'o' || type == 'p')
 		return 1;

@@ -37,7 +37,7 @@ int is_operator(char input_type);
 int is_num(char input_type);
 int is_postfix_opr(char input_type);
 
-int check_if_is_ready_for_math(char type);
+int is_any_opr(char type);
 
 /* Main */
 
@@ -60,13 +60,10 @@ int main(int argc, char *argv[])
 
 	input.subtotal_is_initialized = 0; // присвоено ли переменной subtotal первое число, введенное пользователем
 	input.prev_operator = '\0'; // оператор предыдущего input - используется для расчетов в get_subtotal
-	input.prev_operator_backup = '\0'; // чтобы предыдущий input не затерялся в случае некорректного input
-	// вроде и не нужно
-
-	input.current_operator = '\0'; // текущий оператор
+	input.current_operator = '\0'; // последний введенный оператор
 	
 
-	input.type = '\0'; // тип значения input
+	input.type = '\0'; // тип значения текущего input
 
 	input.new_num; // последнее введенное число
 
@@ -76,15 +73,15 @@ int main(int argc, char *argv[])
 
 	printf("Please consistently enter what you want to calculate. Enter \"=\" to get subtotal and quit.\n");
 
-	/* Структура для данных о последнем input. */
+	/* Структура для состояний о последнем input. */
 	struct State last_input;
-	last_input.was_num = 0;
-	last_input.was_operator = 0;
-	last_input.was_postfix_opr = 0;
+	last_input.was_num = 0; // число, т.е. операнд
+	last_input.was_operator = 0; // бинарный оператор: '+', '-', ...
+	last_input.was_postfix_opr = 0; // постфиксный оператор: '%', 'r'
 
-	/* Структура для данных о текущем input. */
-	struct State current_input;
-	current_input.is_ready_for_math = 0;
+	/* Структура для состояний о текущем input. */
+	// struct State current_input;
+	// current_input.is_ready_for_math = 0;
 
 	while (*input_pt != '=')
 	// while (input.current_operator != '=')
@@ -128,9 +125,9 @@ int main(int argc, char *argv[])
 
 		/* 3. Извлечение данных из корректного input. */
 
-		/* 3.1. Если input является 'o' или 'p', извлечь оператор или символ '%' из него. */
-		if (is_operator(input.type) || is_postfix_opr(input.type))
-			input.current_operator = get_operator(&input_pt); // получаем, м.б., '+', или '%'...
+		/* 3.1. Если input является 'o' или 'p', извлечь оператор из него. */
+		if (is_any_opr(input.type))
+			input.current_operator = get_operator(&input_pt); // получаем оператор
 
 		/* 3.2. Если input является 'n', извлечь число из него. */
 		/* Для вычислений использвуется 2 числа: new_num и subtotal. Здесь мы обозначаем new_num. */
@@ -141,11 +138,11 @@ int main(int argc, char *argv[])
 		/* 4. Обработка извлеченных данных. */
 
 		/* 4.1. Вычисления производятся только если текущий input имеет тип 'o' или 'p'. */
-		/* Тип 'p' не вполне идентичен 'o' - участвует не во всех нижеприведенных операциях. */
-		if ( current_input.is_ready_for_math = check_if_is_ready_for_math(input.type) )
+		/* Тип 'p' не вполне идентичен 'o' - он участвует не во всех нижеприведенных операциях. */
+		if (is_any_opr(input.type))
 		{
 			/* 4.2. "Инициализация" промежуточного итога subtotal. */
-			/* Очевидно, производится только 1 раз за цикл. */
+			/* Производится только 1 раз за цикл (очевидно), когда поступает 1-й input.new_num. */
 			if (!input.subtotal_is_initialized && !input.prev_operator)
 			{
 				subtotal = input.new_num;
@@ -158,8 +155,8 @@ int main(int argc, char *argv[])
 			{
 				subtotal = get_subtotal(subtotal, input);
 
-				/* А затем вывести на экран промежуточный итог subtotal. */
-				/* Но только если данный input имеет тип 'o' (иначе при работе с процентами будет выводиться 
+				/* Вывести на экран промежуточный итог subtotal. */
+				/* Но только если данный input имеет тип 'o' (иначе при работе с постфиксными операторами 'p' будет выводиться 
 				"лишний" subtotal). */
 				if (!is_postfix_opr(input.type))
 					print_subtotal(subtotal, input.current_operator);
@@ -180,7 +177,6 @@ int main(int argc, char *argv[])
 		с оператором '%' будет обрабатываться особо. */
 		{
 			input.prev_operator = input.current_operator;
-			// input.prev_operator_backup = input.current_operator;
 		}
 
 
