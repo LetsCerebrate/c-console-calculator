@@ -89,27 +89,20 @@ int main(int argc, char *argv[])
 	while (*input_pt != '=')
 	// while (1)
 	{
-		// if (input.current_operator == '%')
-		// 	input.type = '\0';
-
-
-		/* 1. Запрос input, определение типа input (оператор 'o' или число 'n'): */
+		/* 1. Запрос input, определение типа input (оператор 'o', число 'n', процент 'p' или unknown '\0'). */
 		input_pt = query_input();
-		input.type = identify_input(&input_pt, subtotal, input); // получаем 'o', 'n' или '\0'
-
-		/* Символ '%' считается оператором, но ввод двух операторов подряд (например, '%' и '=') запрещен.
-		Следующая инструкция позволяет сделать исключение для символа '%': */
-		// if (input.current_operator == '%')
-			// input.type = 'n';
+		input.type = identify_input(&input_pt, subtotal, input); // получаем 'o', 'n', 'p' или '\0'
 
 		printf("| | 1. subtotal? %f\n", subtotal);
 		printf("| | 2. new_num? %f\n", input.new_num);
 		printf("| | 3. current_operator? %c\n", input.current_operator);
 		printf("| | 4. prev_operator? %c\n", input.prev_operator);
 		printf("| | 5. type? %c\n\n", input.type);	
-		// printf("| | 6. was num? %d\n\n", last_input.was_num);
 
-		/* 2. Обработка некорректного input: */
+
+		/* 2. Обработка некорректного input. */
+
+		/* 2.1. Выдать ошибку. */
 		if ( !input.type || 
 			( is_operator(input.type) && (!last_input.was_num && !last_input.was_percent) ) ||
 			( is_operator(input.type) && last_input.was_operator ) ||
@@ -120,48 +113,30 @@ int main(int argc, char *argv[])
 		/* Или: если после ввода, например, числа вводится не оператор, а опять число - т.е. input того же типа. */
 		{
 			print_error(&input_pt, input);
-
 			continue;
 		} // плюс в cond запихать функцию проверки на значения pow и sqrt 
+		/* Если input некорректный, не извлекать данные из него: прервать итерацию. */
 
-		/* ... */
-
-
+		/* 2.2. Данные, необходимые для идентификации некорректного input. */
+		/* Это состояния, показывающие, какого типа был предыдущий input. */
 		last_input.was_operator = is_operator(input.type);	
 		last_input.was_num = is_num(input.type);
 		last_input.was_percent = is_percent(input.type);
 	
 
+		/* 3. Извлечение данных из корректного input. */
 
-
-		/* Извлечение данных из input. */
-
-		/* Если input был корректный, можно извлечь данные из него: */
+		/* 3.1. Если input является 'o' или 'p', извлечь оператор или символ '%' из него. */
 		if (is_operator(input.type) || is_percent(input.type))
-		{
-			input.current_operator = get_operator(&input_pt); // '%' в данном случае расценивается как оператор, особый тип он имеет лишь для удобства
-		}
+			input.current_operator = get_operator(&input_pt); // получаем, м.б., '+', или '%'...
 
+		/* 3.2. Если input является 'n', извлечь число из него. */
+		/* Для вычислений использвуется 2 числа: new_num и subtotal. Здесь мы обозначаем new_num. */
 		else if (is_num(input.type))
-			// if (input.current_operator == '%')
-			// 	input.new_num = get_percentage(subtotal, input.new_num);
-			// else
-				input.new_num = get_num(&input_pt);
-
-		// else if (is_mem)
-
-		// else
-		// 	break;
+			input.new_num = get_num(&input_pt);
 
 
-		// printf("| | 0. input in itself? %c%c%c%c\n", *input_pt, *input_pt, *input_pt, *input_pt);
-		// printf("| | 1. subtotal? %f\n", subtotal);
-		// printf("| | 2. new_num? %f\n", input.new_num);
-		// printf("| | 3. current_operator? %c\n", input.current_operator);
-		// printf("| | 4. prev_operator? %c\n", input.prev_operator);
-		// printf("| | 5. type? %c\n\n", input.type);	
-
-		/* Обработка данных input, вычисления. */
+		/* 4. Обработка извлеченных данных. */
 		/* Вычисления производятся только если текущий input - оператор. */
 		if (is_operator(input.type) || is_percent(input.type))
 		{
