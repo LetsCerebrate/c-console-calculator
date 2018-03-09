@@ -35,7 +35,7 @@ double reset_new_num(struct Input input);
 
 int is_operator(char input_type);
 int is_num(char input_type);
-int is_percent(char input_type);
+int is_postfix_opr(char input_type);
 
 int check_if_is_ready_for_math(char type);
 
@@ -43,6 +43,9 @@ int check_if_is_ready_for_math(char type);
 
 int main(int argc, char *argv[])
 {
+
+
+
 	// printf("ARGS: %s, %d\n", argv[1], argc);
 	// if (argv[1] == "help" || argv[1] == "h") // why does it not work?
 	// {
@@ -77,18 +80,17 @@ int main(int argc, char *argv[])
 	struct State last_input;
 	last_input.was_num = 0;
 	last_input.was_operator = 0;
-	last_input.was_percent = 0;
+	last_input.was_postfix_opr = 0;
 
 	/* Структура для данных о текущем input. */
 	struct State current_input;
 	current_input.is_ready_for_math = 0;
 
-
-
 	while (*input_pt != '=')
 	// while (input.current_operator != '=')
 	{
-		/* 1. Запрос input, определение типа input (оператор 'o', число 'n', процент 'p' или unknown '\0'). */
+		/* 1. Запрос input, определение типа input (оператор 'o', число 'n', постфиксный оператор 'p' (например, процент
+		и sqrt) или unknown '\0'). */
 		input_pt = query_input();
 		input.type = identify_input(&input_pt, subtotal, input); // получаем 'o', 'n', 'p' или '\0'
 
@@ -103,10 +105,10 @@ int main(int argc, char *argv[])
 
 		/* 2.1. Выдать ошибку. */
 		if ( !input.type || 
-			( is_operator(input.type) && (!last_input.was_num && !last_input.was_percent) ) ||
+			( is_operator(input.type) && (!last_input.was_num && !last_input.was_postfix_opr) ) ||
 			( is_operator(input.type) && last_input.was_operator ) ||
 			( is_num(input.type) && last_input.was_num ) ||
-			( is_percent(input.type) && last_input.was_percent ) )
+			( is_postfix_opr(input.type) && last_input.was_postfix_opr ) )
 		/* Ветка срабатывает, если тип input неизвестен, т.е. '\0' */
 		/* Или: если ввод начинается не с числа, а с оператора. */
 		/* Или: если после ввода, например, числа вводится не оператор, а опять число - т.е. input того же типа. */
@@ -121,13 +123,13 @@ int main(int argc, char *argv[])
 		/* Это состояния, показывающие, какого типа был предыдущий input. */
 		last_input.was_operator = is_operator(input.type);	
 		last_input.was_num = is_num(input.type);
-		last_input.was_percent = is_percent(input.type);
+		last_input.was_postfix_opr = is_postfix_opr(input.type);
 	
 
 		/* 3. Извлечение данных из корректного input. */
 
 		/* 3.1. Если input является 'o' или 'p', извлечь оператор или символ '%' из него. */
-		if (is_operator(input.type) || is_percent(input.type))
+		if (is_operator(input.type) || is_postfix_opr(input.type))
 			input.current_operator = get_operator(&input_pt); // получаем, м.б., '+', или '%'...
 
 		/* 3.2. Если input является 'n', извлечь число из него. */
@@ -159,13 +161,13 @@ int main(int argc, char *argv[])
 				/* А затем вывести на экран промежуточный итог subtotal. */
 				/* Но только если данный input имеет тип 'o' (иначе при работе с процентами будет выводиться 
 				"лишний" subtotal). */
-				if (!is_percent(input.type))
+				if (!is_postfix_opr(input.type))
 					print_subtotal(subtotal, input.current_operator);
 				
-				/* Чтобы корректно завершить вычисления, нужно "сбросить" значение input.new_num, поскольку оно является
-				процентом: */
-				if (is_percent(input.type))
-					input.new_num = reset_new_num(input); // в зависимости от input.prev_operator присвоить 1 или 0
+				/* Чтобы корректно завершить вычисления, нужно "сбросить" значение input.new_num, поскольку оно может 
+				являться процентом: */
+				if (is_postfix_opr(input.type))
+					input.new_num = reset_new_num(input); // в зависимости от input.prev_operator присвоить 1.0 или 0.0
 			}
 		}
 

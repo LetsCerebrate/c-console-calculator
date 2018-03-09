@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #ifndef MAX_SIZE
 	#define MAX_SIZE 20
@@ -17,10 +18,10 @@ struct State // структура для хранения состояний (1
 	unsigned int is_ready_for_math : 1;
 	unsigned int is_num : 1;
 	unsigned int is_operator : 1;
-	unsigned int is_percent : 1;
+	unsigned int is_postfix_opr : 1;
 	unsigned int was_num : 1;
 	unsigned int was_operator : 1;
-	unsigned int was_percent : 1;
+	unsigned int was_postfix_opr : 1;
 };
 
 struct Input // структура для хранения данных об input
@@ -367,6 +368,9 @@ double get_subtotal(double subtotal, struct Input input)
 			/* Повторно вызвать данную функцию, но уже не с оператором '%' (будет использоваться предыдущий оператор:
 			'+', '-', etc): */
 			return get_subtotal(subtotal, input);
+
+		case 'r':
+			return sqrt(subtotal);
 	}
 }
 
@@ -410,16 +414,16 @@ int is_num(char input_type)
 
 
 /* 	
-	int is_percent(char input_type);
+	int is_postfix_opr(char input_type);
 
 	Стек:
-		main / is_percent
+		main / is_postfix_opr
 
-	Функция is_percent.
+	Функция is_postfix_opr.
 		Если (char input_type) - символ 'p', возвращает 1.
 		В противном случае возвращает 0.
 */
-int is_percent(char input_type)
+int is_postfix_opr(char input_type)
 {
 	if (input_type == 'p')
 		return 1;
@@ -588,11 +592,11 @@ int check_if_is_operator(char ***input_pt)
 /*
 
 */
-int check_if_is_percent(char ***input_pt)
+int check_if_is_postfix_opr(char ***input_pt)
 {
 	char *start = **input_pt;
 
-	if ( (***input_pt == '%') && ( *((**input_pt) + 1) == '\0' ) )
+	if ( (***input_pt == '%' || ***input_pt == 'r') && ( *((**input_pt) + 1) == '\0' ) )
 	{
 		**input_pt = start;
 		return 1;
@@ -690,12 +694,12 @@ char identify_input(char **input_pt, double subtotal, struct Input input)
 	struct State input_state;
 	input_state.is_num = 0;
 	input_state.is_operator = 0;
-	input_state.is_percent = 0;
+	input_state.is_postfix_opr = 0;
 	// input.is_mem = 0;
 
 	/* 2. Результат. Определение типа input ('o' operator или 'n' number). */
 
-	if (input_state.is_percent = check_if_is_percent(&input_pt))
+	if (input_state.is_postfix_opr = check_if_is_postfix_opr(&input_pt))
 		return 'p';
 
 	/* Если operator 'o': */
@@ -707,6 +711,6 @@ char identify_input(char **input_pt, double subtotal, struct Input input)
 		return 'n';
 		
 	/* Если input некорректный (ни 'o', ни 'n'): */
-	else if ( (!input_state.is_num && !input_state.is_operator && !input_state.is_percent) )
+	else if ( (!input_state.is_num && !input_state.is_operator && !input_state.is_postfix_opr) )
 		return '\0';
 }
