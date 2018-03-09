@@ -18,8 +18,10 @@ struct State // структура для хранения состояний (1
 	// unsigned int is_initialized : 1;
 	unsigned int is_num : 1;
 	unsigned int is_operator : 1;
+	unsigned int is_percent : 1;
 	unsigned int was_num : 1;
 	unsigned int was_operator : 1;
+	unsigned int was_percent : 1;
 };
 
 struct Input // структура для хранения данных об input
@@ -395,6 +397,25 @@ int is_num(char input_type)
 }
 
 
+/* 	
+	int is_percent(char input_type);
+
+	Стек:
+		main / is_percent
+
+	Функция is_percent.
+		Если (char input_type) - символ 'p', возвращает 1.
+		В противном случае возвращает 0.
+*/
+int is_percent(char input_type)
+{
+	if (input_type == 'p')
+		return 1;
+	else
+		return 0;
+}
+
+
 /* 
 	char get_operator(char **input_pt);
 
@@ -408,6 +429,20 @@ int is_num(char input_type)
 char get_operator(char **input_pt)
 {
 	return **input_pt; // получить 1-й элемент
+}
+
+
+/*
+
+..
+
+*/
+double reset_new_num(struct Input input)
+{
+	if (input.prev_operator == '+' || input.prev_operator == '-')
+		return 0.0;
+	else
+		return 1.0;
 }
 
 
@@ -498,7 +533,7 @@ int check_if_is_operator(char ***input_pt)
 	/* 1. Хранилище значений: */
 	char operators_list_src[MAX_SIZE] = {'=', '+', '-', '*', '/', '^', '%', '\0'}; // м.б., '=' вынести отсюда?
 	char *operators_list; // будем пользоваться данным указателем вместо строки src
-	// for no particular reason, просто для разминки
+	// for no particular reason, разминки ради
 
 	init_mem(&operators_list, get_str_length(operators_list_src) + 1); // (n + 1) - плюс место под нулевой терминатор
 	fill_list_pt(&operators_list, operators_list_src);
@@ -535,6 +570,24 @@ int check_if_is_operator(char ***input_pt)
 		**input_pt = start_input;
 		return 0;
 	}
+}
+
+
+/*
+
+*/
+int check_if_is_percent(char ***input_pt)
+{
+	char *start = **input_pt;
+
+	if ( (***input_pt == '%') && ( *((**input_pt) + 1) == '\0' ) )
+	{
+		**input_pt = start;
+		return 1;
+	}
+
+	**input_pt = start;
+	return 0;
 }
 
 
@@ -596,6 +649,9 @@ int check_if_is_number(char ***input_pt)
 }
 
 
+
+
+
 /* 
 	char identify_input(char **input_pt, double subtotal, struct Input input);
 
@@ -613,9 +669,13 @@ char identify_input(char **input_pt, double subtotal, struct Input input)
 	struct State input_state;
 	input_state.is_num = 0;
 	input_state.is_operator = 0;
+	input_state.is_percent = 0;
 	// input.is_mem = 0;
 
 	/* 2. Результат. Определение типа input ('o' operator или 'n' number). */
+
+	if (input_state.is_percent = check_if_is_percent(&input_pt))
+		return 'p';
 
 	/* Если operator 'o': */
 	if (input_state.is_operator = check_if_is_operator(&input_pt))
@@ -626,6 +686,6 @@ char identify_input(char **input_pt, double subtotal, struct Input input)
 		return 'n';
 		
 	/* Если input некорректный (ни 'o', ни 'n'): */
-	else if ( (!input_state.is_num && !input_state.is_operator) )
+	else if ( (!input_state.is_num && !input_state.is_operator && !input_state.is_percent) )
 		return '\0';
 }

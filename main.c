@@ -31,9 +31,11 @@ char get_operator(char **input_pt);
 double get_num(char **input_pt);
 char identify_input(char **input_pt, double subtotal, struct Input input);
 double get_subtotal(double subtotal, struct Input input);
+double reset_new_num(struct Input input);
 
 int is_operator(char input_type);
 int is_num(char input_type);
+int is_percent(char input_type);
 
 /* Main */
 
@@ -80,16 +82,25 @@ int main(int argc, char *argv[])
 	struct State last_input;
 	last_input.was_num = 0;
 	last_input.was_operator = 0;
+	last_input.was_percent = 0;
 
 
 
 	while (*input_pt != '=')
+	// while (1)
 	{
+		// if (input.current_operator == '%')
+		// 	input.type = '\0';
 
 
 		/* 1. Запрос input, определение типа input (оператор 'o' или число 'n'): */
 		input_pt = query_input();
 		input.type = identify_input(&input_pt, subtotal, input); // получаем 'o', 'n' или '\0'
+
+		/* Символ '%' считается оператором, но ввод двух операторов подряд (например, '%' и '=') запрещен.
+		Следующая инструкция позволяет сделать исключение для символа '%': */
+		// if (input.current_operator == '%')
+			// input.type = 'n';
 
 		printf("| | 1. subtotal? %f\n", subtotal);
 		printf("| | 2. new_num? %f\n", input.new_num);
@@ -100,9 +111,11 @@ int main(int argc, char *argv[])
 
 		/* 2. Обработка некорректного input: */
 		if (!input.type || 
-			(is_operator(input.type) && !last_input.was_num) ||
+			// (is_operator(input.type) && !last_input.was_num) ||
+			(is_operator(input.type) && (   !last_input.was_num && !last_input.was_percent    )) ||
 			(is_operator(input.type) && last_input.was_operator) ||
-			(is_num(input.type) && last_input.was_num) )
+			(is_num(input.type) && last_input.was_num) ||
+			(is_percent(input.type) && last_input.was_percent) )
 		/* Ветка срабатывает, если тип input неизвестен, т.е. '\0' */
 		/* Или: если ввод начинается не с числа, а с оператора. */
 		/* Или: если после ввода, например, числа вводится не оператор, а опять число - т.е. input того же типа. */
@@ -113,15 +126,21 @@ int main(int argc, char *argv[])
 		} // плюс в cond запихать функцию проверки на значения pow и sqrt 
 
 		/* ... */
-		last_input.was_operator = is_operator(input.type);
+
+
+		last_input.was_operator = is_operator(input.type);	
 		last_input.was_num = is_num(input.type);
+		last_input.was_percent = is_percent(input.type);
+	
+
 
 
 		/* Извлечение данных из input. */
+
 		/* Если input был корректный, можно извлечь данные из него: */
-		if (is_operator(input.type))
+		if (is_operator(input.type) || is_percent(input.type))
 		{
-			input.current_operator = get_operator(&input_pt);
+			input.current_operator = get_operator(&input_pt); // '%' в данном случае расценивается как оператор, особый тип он имеет лишь для удобства
 		}
 
 		else if (is_num(input.type))
@@ -145,7 +164,7 @@ int main(int argc, char *argv[])
 
 		/* Обработка данных input, вычисления. */
 		/* Вычисления производятся только если текущий input - оператор. */
-		if (is_operator(input.type))
+		if (is_operator(input.type) || is_percent(input.type))
 		{
 			if (!input.subtotal_is_initialized && !input.prev_operator)
 			/* "Инициализация" промежуточного итога subtotal: */
@@ -159,8 +178,12 @@ int main(int argc, char *argv[])
 			{
 				subtotal = get_subtotal(subtotal, input);
 
-				if (input.current_operator == '%') // возможно, это ключ к решению проблемы со вводом двух 'o' подряд: '%', '='
-					input.type = 'n';
+				/* Чтобы корректно завершить вычисления, нужно "сбросить" значение input.new_num, поскольку оно является
+				процентом: */
+				if (is_percent(input.type))
+					input.new_num = reset_new_num(input); // в зависимости от input.prev_operator присвоить 1 или 0
+
+
 
 			}
 		}
