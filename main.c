@@ -110,12 +110,11 @@ int main(int argc, char *argv[])
 		// printf("| | 6. was num? %d\n\n", last_input.was_num);
 
 		/* 2. Обработка некорректного input: */
-		if (!input.type || 
-			// (is_operator(input.type) && !last_input.was_num) ||
-			(is_operator(input.type) && (   !last_input.was_num && !last_input.was_percent    )) ||
-			(is_operator(input.type) && last_input.was_operator) ||
-			(is_num(input.type) && last_input.was_num) ||
-			(is_percent(input.type) && last_input.was_percent) )
+		if ( !input.type || 
+			( is_operator(input.type) && (!last_input.was_num && !last_input.was_percent) ) ||
+			( is_operator(input.type) && last_input.was_operator ) ||
+			( is_num(input.type) && last_input.was_num ) ||
+			( is_percent(input.type) && last_input.was_percent ) )
 		/* Ветка срабатывает, если тип input неизвестен, т.е. '\0' */
 		/* Или: если ввод начинается не с числа, а с оператора. */
 		/* Или: если после ввода, например, числа вводится не оператор, а опять число - т.е. input того же типа. */

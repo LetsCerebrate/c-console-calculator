@@ -45,7 +45,7 @@ struct Input // структура для хранения данных об inp
 */
 void print_help()
 {
-	printf("Acceptable operators are follows:\n  +\n  -\n  *\n  /\n  ^\n  %\n  =\n");
+	printf("Acceptable operators are follows:\n  +\n  -\n  *\n  /\n  ^\n  %\n  r\n  =\n");
 	return;
 }
 
@@ -81,7 +81,12 @@ void print_error(char **input_pt, struct Input input)
 		printf("Invalid input: \"%s\". Please enter operator.\n", input_str);
 	else if (input.type == 'o')
 		printf("Invalid input: \"%s\". Please enter number.\n", input_str);
+	else if (input.type == 'p')
+		printf("Invalid input: \"%s\". Please enter operator.\n", input_str);
+	else if (!input.type)
+		printf("Invalid input: \"%s\". Please enter something meaningful.\n", input_str);
 
+	printf("Enter \"=\" to get subtotal and quit.\n");
 	return;
 }
 
