@@ -13,22 +13,21 @@
 
 /* Объекты */
 
-struct State // структура для хранения состояний (1 или 0)
-{
-	unsigned int has_point : 1;
-	unsigned int has_sign : 1;
-	// unsigned int is_done : 1;
-	unsigned int is_num : 1;
-	unsigned int is_operator : 1;
-	unsigned int is_postfix_opr : 1;
-	unsigned int was_num : 1;
-	unsigned int was_operator : 1;
-	unsigned int was_postfix_opr : 1;
-};
 
 struct Input // структура для хранения данных об input
 {
-	int subtotal_is_initialized;
+	unsigned int has_point : 1;
+	unsigned int has_sign : 1;
+	unsigned int is_done : 1;
+	unsigned int is_num : 1; // for identify_input
+	unsigned int is_operator : 1; // for identify_input
+	unsigned int is_percent : 1; // for identify_input
+	unsigned int is_root : 1; // for identify_input
+	unsigned int was_num : 1;
+	unsigned int was_operator : 1;
+	unsigned int was_percent : 1;
+	unsigned int was_root : 1; // not needed?
+	unsigned int subtotal_is_initialized : 1;
 	char prev_operator;
 	char prev_operator_backup;
 	char current_operator;
@@ -78,16 +77,16 @@ int is_num(char input_type)
 
 
 /* 	
-	int is_postfix_opr(char input_type);
+	int is_percent(char input_type);
 
 	Стек:
-		main / is_postfix_opr
+		main / is_percent
 
-	Функция is_postfix_opr.
+	Функция is_percent.
 		Если (char input_type) - символ 'p', возвращает 1.
 		В противном случае возвращает 0.
 */
-int is_postfix_opr(char input_type)
+int is_percent(char input_type)
 {
 	if (input_type == 'p')
 		return 1;
@@ -95,6 +94,24 @@ int is_postfix_opr(char input_type)
 		return 0;
 }
 
+
+/* 	
+	int is_root(char input_type);
+
+	Стек:
+		main / is_root
+
+	Функция is_root.
+		Если (char input_type) - символ 'r', возвращает 1.
+		В противном случае возвращает 0.
+*/
+int is_root(char input_type)
+{
+	if (input_type == 'r')
+		return 1;
+	else
+		return 0;
+}
 
 
 
@@ -169,26 +186,34 @@ void print_error(char **input_pt, struct Input input)
 */
 void print_subtotal(double subtotal, struct Input input)
 {
-	/* 1. Вывести промежуточный результат. */
-printf("opr: %c\n", input.current_operator);
-	/* 1.1.  */
-	if ( isnan(subtotal) || isinf(subtotal) )
+	/* 1. Ошибка в вычислениях (недопустимая операция). */
+	if ( (isnan(subtotal) || isinf(subtotal)) )
 	{
-		printf("[%f %c %f] Invalid operation!\n", input.old_num, input.prev_operator, input.new_num);
-		printf("Subtotal was before last operation occured: %f\n", input.old_num);
+		/* 1.1. Недопустимая операция с процентами. */
+		/* Если input начинается со ввода процентов. */
+		if (input.old_num == input.new_num)
+			printf("[? and %f%%] Invalid operation!\n", input.old_num);
+
+		/* 1.2. Прочие недопустимые операции. */
+		else
+		{
+			printf("[%f %c %f] Invalid operation!\n", input.old_num, input.prev_operator, input.new_num);
+			printf("Subtotal was before last operation occured: %f\n", input.old_num);
+		}
+
+		/* 1.3. Закрыть программу. */
 		exit(1);
 	}
-	/* 1.1. Вычисления с квадратным корнем: */
+
+	/* 2. Корректные вычисления. */
+
+	/* 2.1. Вычисления с квадратным корнем. */
 	else if ( input.prev_operator == 'r' )
 		printf("[%c%f = %f]\n", SQRT_ASCII, input.old_num, subtotal);
-	/* 1.2. Все прочие вычисления: */
+
+	/* 2.2. Все прочие вычисления. */
 	else if ( (input.old_num != subtotal) ) // отфильтровать лишние вызовы printf при работе с процентами
 		printf("[%f %c %f = %f]\n", input.old_num, input.prev_operator, input.new_num, subtotal);
-
-
-	/* 2. Вывести итог. */
-	if ( input.current_operator == '=' )
-		printf("Result is: %f\n", subtotal);
 
 	return;
 }
@@ -460,10 +485,6 @@ double get_subtotal(double subtotal, struct Input input)
 			}
 
 		case '%':
-
-
-
-
 			/* Узнать, сколько будет input.new_num процентов от subtotal: */
 			input.new_num = get_percentage(subtotal, input.new_num);
 
@@ -528,7 +549,7 @@ double reset_new_num(struct Input input)
 double get_num(char **input_pt)
 {
 	/* 1. Хранилище объектов: */
-	struct State input;
+	struct Input input;
 	input.has_point = 0;
 	
 	char elem = '\0'; // псевдоним для **input_pt внутри цикла
@@ -643,14 +664,32 @@ int check_if_is_operator(char ***input_pt)
 }
 
 
-/*
 
-*/
-int check_if_is_postfix_opr(char ***input_pt)
+
+int check_if_is_root(char ***input_pt)
 {
 	char *start = **input_pt;
 
-	if ( (***input_pt == '%' || ***input_pt == 'r') && ( *((**input_pt) + 1) == '\0' ) )
+	if ( (***input_pt == 'r') && ( *((**input_pt) + 1) == '\0' ) )
+	{
+		**input_pt = start;
+		return 1;
+	}
+
+	**input_pt = start;
+	return 0;
+}
+
+
+
+/*
+
+*/
+int check_if_is_percent(char ***input_pt)
+{
+	char *start = **input_pt;
+
+	if ( (***input_pt == '%') && ( *((**input_pt) + 1) == '\0' ) )
 	{
 		**input_pt = start;
 		return 1;
@@ -674,7 +713,7 @@ int check_if_is_postfix_opr(char ***input_pt)
 int check_if_is_number(char ***input_pt)
 {
 	/* 1. Хранилище объектов: */
-	struct State input;
+	struct Input input;
 	input.has_point = 0;
 
 	char elem = '\0'; // псевдоним для ***input_pt внутри цикла
@@ -722,13 +761,13 @@ int check_if_is_number(char ***input_pt)
 /*
 ...
 */
-int is_any_opr(char type)
-{
-	if (type == 'o' || type == 'p')
-		return 1;
-	else
-		return 0;
-}
+// int is_any_opr(char type)
+// {
+// 	if (type == 'o' || type == 'p' || type == 'r')
+// 		return 1;
+// 	else
+// 		return 0;
+// }
 
 
 /* 
@@ -749,14 +788,17 @@ int is_any_opr(char type)
 char identify_input(char **input_pt, double subtotal, struct Input input)
 {
 	/* 1. Хранилище объектов: */
-	struct State input_state;
+	struct Input input_state;
 	input_state.is_num = 0;
 	input_state.is_operator = 0;
-	input_state.is_postfix_opr = 0;
+	input_state.is_percent = 0;
+	input_state.is_root = 0;
 
 	/* 2. Результат. Определение типа input ('o', 'n' или 'p'). */
+	if (input_state.is_percent = check_if_is_root(&input_pt))
+		return 'r';
 
-	if (input_state.is_postfix_opr = check_if_is_postfix_opr(&input_pt))
+	if (input_state.is_percent = check_if_is_percent(&input_pt))
 		return 'p';
 
 	/* Если operator 'o': */
@@ -768,6 +810,6 @@ char identify_input(char **input_pt, double subtotal, struct Input input)
 		return 'n';
 		
 	/* Если input некорректный (ни 'o', ни 'n'): */
-	else if ( (!input_state.is_num && !input_state.is_operator && !input_state.is_postfix_opr) )
+	else if ( (!input_state.is_num && !input_state.is_operator && !input_state.is_percent) )
 		return '\0';
 }
