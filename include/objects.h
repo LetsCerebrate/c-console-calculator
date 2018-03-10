@@ -6,8 +6,10 @@
 	#define MAX_SIZE 20
 #endif
 #ifndef ZERO_ASCII
-	#define ZERO_ASCII 48.0 // 0 has index 48 in ASCII
+	#define ZERO_ASCII 48 // 0 has index 48 in ASCII
 #endif
+
+#define SQRT_ASCII 251
 
 /* Объекты */
 
@@ -15,7 +17,7 @@ struct State // структура для хранения состояний (1
 {
 	unsigned int has_point : 1;
 	unsigned int has_sign : 1;
-	// unsigned int is_ready_for_math : 1;
+	// unsigned int is_done : 1;
 	unsigned int is_num : 1;
 	unsigned int is_operator : 1;
 	unsigned int is_postfix_opr : 1;
@@ -31,8 +33,69 @@ struct Input // структура для хранения данных об inp
 	char prev_operator_backup;
 	char current_operator;
 	char type;
+	double old_num;
 	double new_num;
 };
+
+
+
+/* 
+	int is_operator(char input_type);
+
+	Стек:
+		main / is_operator
+
+	Функция is_operator.
+		Если (char input_type) - символ 'o', возвращает 1.
+		В противном случае возвращает 0.
+*/
+int is_operator(char input_type)
+{
+	if (input_type == 'o')
+		return 1;
+	else
+		return 0;
+}
+
+
+/* 	
+	int is_num(char input_type);
+
+	Стек:
+		main / is_num
+
+	Функция is_num.
+		Если (char input_type) - символ 'n', возвращает 1.
+		В противном случае возвращает 0.
+*/
+int is_num(char input_type)
+{
+	if (input_type == 'n')
+		return 1;
+	else
+		return 0;
+}
+
+
+/* 	
+	int is_postfix_opr(char input_type);
+
+	Стек:
+		main / is_postfix_opr
+
+	Функция is_postfix_opr.
+		Если (char input_type) - символ 'p', возвращает 1.
+		В противном случае возвращает 0.
+*/
+int is_postfix_opr(char input_type)
+{
+	if (input_type == 'p')
+		return 1;
+	else
+		return 0;
+}
+
+
 
 
 /* Функции для вывода данных. */
@@ -57,15 +120,18 @@ void print_help()
 		main / print_error
 
 	Функция print_error.
-		Вывести сообщение о некорректном input.
+		Выводит сообщение о некорректном input.
 */
 void print_error(char **input_pt, struct Input input)
 {
+	/* 1. Хранилище объектов: */
 	char input_str[MAX_SIZE];
 
 	char *start = *input_pt;
 	register int i;
 
+	/* 2. Определение input. */
+	/* Данный input будет выведен в сообщении об ошибке. */
 	for (i = 0; **input_pt != '\0'; i++)
 	{
 		input_str[i] = **input_pt;
@@ -77,6 +143,7 @@ void print_error(char **input_pt, struct Input input)
 
 	*input_pt = start;
 
+	/* 3. Результат: */
 	if (input.type == 'n')
 		printf("Invalid input: \"%s\". Please enter operator.\n", input_str);
 	else if (input.type == 'o')
@@ -91,27 +158,39 @@ void print_error(char **input_pt, struct Input input)
 
 
 /* 
-	void print_result(double subtotal);
+	void print_subtotal(double subtotal, struct Input input);
 
 	Стек:
-		main / print_result
+		main / print_subtotal
+		main / get_subtotal / print_subtotal
 
-	Функция print_result.
-		Вывести значение (double subtotal).
+	Функция print_subtotal.
+		Выводит результаты вычислений.
 */
-void print_result(double subtotal)
+void print_subtotal(double subtotal, struct Input input)
 {
-	printf("Result is: %f\n", subtotal);
+	/* 1. Вывести промежуточный результат. */
+printf("opr: %c\n", input.current_operator);
+	/* 1.1.  */
+	if ( isnan(subtotal) || isinf(subtotal) )
+	{
+		printf("[%f %c %f] Invalid operation!\n", input.old_num, input.prev_operator, input.new_num);
+		printf("Subtotal was before last operation occured: %f\n", input.old_num);
+		exit(1);
+	}
+	/* 1.1. Вычисления с квадратным корнем: */
+	else if ( input.prev_operator == 'r' )
+		printf("[%c%f = %f]\n", SQRT_ASCII, input.old_num, subtotal);
+	/* 1.2. Все прочие вычисления: */
+	else if ( (input.old_num != subtotal) ) // отфильтровать лишние вызовы printf при работе с процентами
+		printf("[%f %c %f = %f]\n", input.old_num, input.prev_operator, input.new_num, subtotal);
+
+
+	/* 2. Вывести итог. */
+	if ( input.current_operator == '=' )
+		printf("Result is: %f\n", subtotal);
+
 	return;
-}
-
-
-void print_subtotal(double subtotal, char last_operator)
-{
-	if (last_operator == '=')
-		printf("Done. Result is: %f\n", subtotal);
-	else
-		printf("Subtotal is: %f\n", subtotal);
 }
 
 
@@ -154,7 +233,7 @@ void init_mem(char **pt, int mem_amount)
 */
 void fill_list_pt(char **pt, char *str)
 {
-	/* 1. Хранилище значений: */
+	/* 1. Хранилище объектов: */
 	register int i;
 	register char *start = *pt; // запомнили положение "внутреннего" указателя до сдвига
 
@@ -346,6 +425,7 @@ int get_correct_exp(double exp)
 double get_subtotal(double subtotal, struct Input input)
 {
 	char opr = '\0';
+	double subtotal_initial = subtotal;
 
 	if (input.current_operator == '%') // '%' не записывается в input.prev_operator, поэтому его нужно обработать отдельно
 		opr = '%';
@@ -380,6 +460,10 @@ double get_subtotal(double subtotal, struct Input input)
 			}
 
 		case '%':
+
+
+
+
 			/* Узнать, сколько будет input.new_num процентов от subtotal: */
 			input.new_num = get_percentage(subtotal, input.new_num);
 
@@ -388,68 +472,16 @@ double get_subtotal(double subtotal, struct Input input)
 
 			/* Повторно вызвать данную функцию, но уже не с оператором '%' (будет использоваться предыдущий оператор:
 			'+', '-', etc): */
-			return get_subtotal(subtotal, input);
+			subtotal_initial = get_subtotal(subtotal, input);
+
+			if (!input.current_operator)
+				print_subtotal(subtotal_initial, input);
+
+			return subtotal_initial;
 
 		case 'r':
 			return sqrt(subtotal);
 	}
-}
-
-
-/* 
-	int is_operator(char input_type);
-
-	Стек:
-		main / is_operator
-
-	Функция is_operator.
-		Если (char input_type) - символ 'o', возвращает 1.
-		В противном случае возвращает 0.
-*/
-int is_operator(char input_type)
-{
-	if (input_type == 'o')
-		return 1;
-	else
-		return 0;
-}
-
-
-/* 	
-	int is_num(char input_type);
-
-	Стек:
-		main / is_num
-
-	Функция is_num.
-		Если (char input_type) - символ 'n', возвращает 1.
-		В противном случае возвращает 0.
-*/
-int is_num(char input_type)
-{
-	if (input_type == 'n')
-		return 1;
-	else
-		return 0;
-}
-
-
-/* 	
-	int is_postfix_opr(char input_type);
-
-	Стек:
-		main / is_postfix_opr
-
-	Функция is_postfix_opr.
-		Если (char input_type) - символ 'p', возвращает 1.
-		В противном случае возвращает 0.
-*/
-int is_postfix_opr(char input_type)
-{
-	if (input_type == 'p')
-		return 1;
-	else
-		return 0;
 }
 
 
@@ -495,7 +527,7 @@ double reset_new_num(struct Input input)
 */
 double get_num(char **input_pt)
 {
-	/* 1. Хранилище значений: */
+	/* 1. Хранилище объектов: */
 	struct State input;
 	input.has_point = 0;
 	
@@ -527,7 +559,7 @@ double get_num(char **input_pt)
 			continue;
 		}
 
-		tmp = (double) (elem - ZERO_ASCII) / multiplier;
+		tmp = (double) (elem - (double) ZERO_ASCII) / multiplier;
 		result += tmp;
 
 		/* Если есть точка (т.е. input - десятичная дробь): */
@@ -555,6 +587,7 @@ double get_num(char **input_pt)
 }
 
 
+
 /* 
 	int check_if_is_operator(char ***input_pt);
 
@@ -567,7 +600,7 @@ double get_num(char **input_pt)
 */
 int check_if_is_operator(char ***input_pt)
 {
-	/* 1. Хранилище значений: */
+	/* 1. Хранилище объектов: */
 	char operators_list_src[MAX_SIZE] = {'=', '+', '-', '*', '/', '^', '%', '\0'}; // м.б., '=' вынести отсюда?
 	char *operators_list; // будем пользоваться данным указателем вместо строки src
 	// for no particular reason, разминки ради
@@ -640,7 +673,7 @@ int check_if_is_postfix_opr(char ***input_pt)
 */
 int check_if_is_number(char ***input_pt)
 {
-	/* 1. Хранилище значений: */
+	/* 1. Хранилище объектов: */
 	struct State input;
 	input.has_point = 0;
 
@@ -705,20 +738,23 @@ int is_any_opr(char type)
 		main / identify_input
 
 	Функция identify_input.
-		Если (char **input_pt) - оператор ('+', '*', ...), возвращает 'o'. 
-		Если (char **input_pt) - число, возвращает 'n'.
+		Если (char **input_pt) - оператор ('+', '*', ...), возвращает 'o' (operator). 
+		Если (char **input_pt) - число, возвращает 'n' (number).
+		Если (char **input_pt) - корень или процент, возвращает 'p' (postfix operator * ).
 		Если (char **input_pt) - некорректное значение, возвращает '\0' (false).
+
+		* Квадратный корень в данной реализации калькулятора считается постфиксным оператором.
+		Например, (4r == 2)
 */
 char identify_input(char **input_pt, double subtotal, struct Input input)
 {
-	/* 1. Хранилище значений: */
+	/* 1. Хранилище объектов: */
 	struct State input_state;
 	input_state.is_num = 0;
 	input_state.is_operator = 0;
 	input_state.is_postfix_opr = 0;
-	// input.is_mem = 0;
 
-	/* 2. Результат. Определение типа input ('o' operator или 'n' number). */
+	/* 2. Результат. Определение типа input ('o', 'n' или 'p'). */
 
 	if (input_state.is_postfix_opr = check_if_is_postfix_opr(&input_pt))
 		return 'p';

@@ -25,7 +25,7 @@ struct Input;
 
 void print_help();
 void print_error(char **input_pt, struct Input input);
-void print_subtotal(double subtotal, char last_operator);
+void print_subtotal(double subtotal, struct Input input);
 
 char get_operator(char **input_pt);
 double get_num(char **input_pt);
@@ -43,8 +43,6 @@ int is_any_opr(char type);
 
 int main(int argc, char *argv[])
 {
-
-
 
 	// printf("ARGS: %s, %d\n", argv[1], argc);
 	// if (argv[1] == "help" || argv[1] == "h") // why does it not work?
@@ -65,7 +63,8 @@ int main(int argc, char *argv[])
 
 	input.type = '\0'; // тип значения текущего input
 
-	input.new_num; // последнее введенное число
+	input.new_num = 0.0; // последнее введенное число
+	input.old_num = 0.0; // "старое" число; в вычислениях не участвует, необходимо для корректной работы print_subtotal (и только)
 
 	char *input_pt; // input хранится в статической переменной
 	double subtotal = 0.0; // промежуточный итог
@@ -79,17 +78,20 @@ int main(int argc, char *argv[])
 	last_input.was_operator = 0; // бинарный оператор: '+', '-', ...
 	last_input.was_postfix_opr = 0; // постфиксный оператор: '%', 'r'
 
-	/* Структура для состояний о текущем input. */
-	// struct State current_input;
-	// current_input.is_ready_for_math = 0;
-
-	while (*input_pt != '=')
-	// while (input.current_operator != '=')
+	while (1)
 	{
 		/* 1. Запрос input, определение типа input (оператор 'o', число 'n', постфиксный оператор 'p' (например, процент
 		и sqrt) или unknown '\0'). */
 		input_pt = query_input();
 		input.type = identify_input(&input_pt, subtotal, input); // получаем 'o', 'n', 'p' или '\0'
+
+		/* Если пользователь вводит '=', цикл прерывается: */
+		// if (is_operator(input.type) && (get_operator(&input_pt) == '='))
+		// {
+		// 	print_subtotal(subtotal, input);
+		// 	break;
+		// }
+			// if (*input_pt == 'q') break;
 
 		// printf("| | 1. subtotal? %f\n", subtotal);
 		// printf("| | 2. new_num? %f\n", input.new_num);
@@ -102,23 +104,30 @@ int main(int argc, char *argv[])
 
 		/* 2.1. Выдать ошибку. */
 		if ( !input.type || 
-			( is_operator(input.type) && (!last_input.was_num && !last_input.was_postfix_opr) ) ||
-			( is_operator(input.type) && last_input.was_operator ) ||
+			( (is_operator(input.type) && (!last_input.was_num && !last_input.was_postfix_opr)) /*&& !(is_operator(input.type) && (get_operator(&input_pt) == '='))*/  ) ||
+			( is_operator(input.type) && last_input.was_operator   /*&& !(is_operator(input.type) && (get_operator(&input_pt) == '='))*/ ) ||
 			( is_num(input.type) && last_input.was_num ) ||
 			( is_postfix_opr(input.type) && last_input.was_postfix_opr ) )
 		/* Ветка срабатывает, если тип input неизвестен, т.е. '\0' */
 		/* Или: если ввод начинается не с числа, а с оператора. */
 		/* Или: если после ввода, например, числа вводится не оператор, а опять число - т.е. input того же типа. */
-		{
+		{		
+			/* Знак '=' необходимо обработать особо. */
+			/* Если введен '=', необходимо завершить работу программы. */
+			if (is_operator(input.type) && (get_operator(&input_pt) == '='))
+				break;
+
 			print_error(&input_pt, input);
 
 			continue;
-		} // плюс в cond запихать функцию проверки на значения pow и sqrt 
-		/* Если input некорректный, не извлекать данные из него: прервать итерацию. */
+			/* Если input некорректный, не извлекать данные из него: прервать итерацию. */
+		}
+
 
 		/* 2.2. Данные, необходимые для идентификации некорректного input. */
 		/* Это состояния, показывающие, какого типа был предыдущий input. */
-		last_input.was_operator = is_operator(input.type);	
+
+		last_input.was_operator = is_operator(input.type);
 		last_input.was_num = is_num(input.type);
 		last_input.was_postfix_opr = is_postfix_opr(input.type);
 	
@@ -145,6 +154,7 @@ int main(int argc, char *argv[])
 			/* Производится только 1 раз за цикл (очевидно), когда поступает 1-й input.new_num. */
 			if (!input.subtotal_is_initialized && !input.prev_operator)
 			{
+				
 				subtotal = input.new_num;
 				input.subtotal_is_initialized = 1;
 			}
@@ -153,13 +163,14 @@ int main(int argc, char *argv[])
 			/* Только если subtotal уже "инициализирован". */
 			else
 			{
+				input.old_num = subtotal;
 				subtotal = get_subtotal(subtotal, input);
 
 				/* Вывести на экран промежуточный итог subtotal. */
 				/* Но только если данный input имеет тип 'o' (иначе при работе с постфиксными операторами 'p' будет выводиться 
 				"лишний" subtotal). */
 				if (!is_postfix_opr(input.type))
-					print_subtotal(subtotal, input.current_operator);
+					print_subtotal(subtotal, input);
 				
 				/* Чтобы корректно завершить вычисления, нужно "сбросить" значение input.new_num, поскольку оно может 
 				являться процентом: */
@@ -178,23 +189,20 @@ int main(int argc, char *argv[])
 		{
 			input.prev_operator = input.current_operator;
 		}
+// printf("!!!! %c\n", input.current_operator);
 
-
-		/* Если пользователь вводит '=', цикл прерывается: */
-		// if (input.current_operator == '=')
-		// {
-		// 	break;
-		// }
-
-		// input.count++;
+		/* Знак '=' необходимо обработать особо. */
+		/* Если введен '=', необходимо завершить работу программы. */
+		if (is_operator(input.type) && (get_operator(&input_pt) == '='))
+			break;
 	}
 
 	/* Получить результат вычислений: */
-		if (isnan(subtotal) || isinf(subtotal))
-		{
-			printf("Error in calculations.\n");
-			print_subtotal(subtotal, input.current_operator);
-		}
+		// if (isnan(subtotal) || isinf(subtotal))
+		// {
+		// 	printf("Error in calculations.\n");
+		// 	print_subtotal(subtotal, input);
+		// }
 			
 
 
