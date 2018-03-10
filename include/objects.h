@@ -328,6 +328,9 @@ int get_correct_exp(double exp)
 	if (exp < 0)
 		result = alter_num_sign(exp);
 
+	if ((double) result != exp)
+		printf("Please note that exponent's been converted into %d.\n", result);
+
 	return result;
 }
 
@@ -365,16 +368,14 @@ double get_subtotal(double subtotal, struct Input input)
 
 		case '^':
 			if (!input.new_num)
-				return 1.0; // число в степени 0 равно 1 (если само число - не 0)
+				return 1.0; // num (если num != 0) в степени 0 равно 1
 
 			else if (!input.new_num && !subtotal)
-				return 0.0; // 0 в степени 0 путь будет... 0 (хотя, в сущности, это некорректная операция)
+				return 0.0; // 0 в степени 0 пусть будет... 0 (хотя, в сущности, это некорректная операция)
 
 			else
 			{
 				input.new_num = get_correct_exp(input.new_num);
-				printf("Please note that exponent's been converted into %f.\n", input.new_num);
-
 				return pow(subtotal, input.new_num);
 			}
 
