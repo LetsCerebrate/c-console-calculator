@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <math.h>
 
-#ifndef MAX_SIZE
+// #ifndef MAX_SIZE
 	#define MAX_SIZE 20
-#endif
-#ifndef ZERO_ASCII
+// #endif
+// #ifndef ZERO_ASCII
 	#define ZERO_ASCII 48 // 0 has index 48 in ASCII
-#endif
+// #endif
 
 #define SQRT_ASCII 251
 
@@ -16,6 +16,12 @@
 
 struct Input // структура для хранения данных об input
 {
+	char current_operator;
+	char prev_operator;
+	double new_num;
+	double old_num;
+	char type;
+
 	unsigned int has_point : 1;
 	unsigned int has_sign : 1;
 	unsigned int is_done : 1;
@@ -23,17 +29,13 @@ struct Input // структура для хранения данных об inp
 	unsigned int is_operator : 1; // for identify_input
 	unsigned int is_percent : 1; // for identify_input
 	unsigned int is_root : 1; // for identify_input
+	unsigned int subtotal_is_initialized : 1;
 	unsigned int was_num : 1;
 	unsigned int was_operator : 1;
 	unsigned int was_percent : 1;
 	unsigned int was_root : 1; // not needed?
-	unsigned int subtotal_is_initialized : 1;
-	char prev_operator;
-	char prev_operator_backup;
-	char current_operator;
-	char type;
-	double old_num;
-	double new_num;
+
+
 };
 
 
@@ -141,7 +143,7 @@ void print_help()
 */
 void print_error(char **input_pt, struct Input input)
 {
-	/* 1. Хранилище объектов: */
+	/* 1. Объекты. */
 	char input_str[MAX_SIZE];
 
 	char *start = *input_pt;
@@ -258,7 +260,7 @@ void init_mem(char **pt, int mem_amount)
 */
 void fill_list_pt(char **pt, char *str)
 {
-	/* 1. Хранилище объектов: */
+	/* 1. Объекты. */
 	register int i;
 	register char *start = *pt; // запомнили положение "внутреннего" указателя до сдвига
 
@@ -548,7 +550,7 @@ double reset_new_num(struct Input input)
 */
 double get_num(char **input_pt)
 {
-	/* 1. Хранилище объектов: */
+	/* 1. Объекты. */
 	struct Input input;
 	input.has_point = 0;
 	
@@ -621,7 +623,7 @@ double get_num(char **input_pt)
 */
 int check_if_is_operator(char ***input_pt)
 {
-	/* 1. Хранилище объектов: */
+	/* 1. Объекты. */
 	char operators_list_src[MAX_SIZE] = {'=', '+', '-', '*', '/', '^', '%', '\0'}; // м.б., '=' вынести отсюда?
 	char *operators_list; // будем пользоваться данным указателем вместо строки src
 	// for no particular reason, разминки ради
@@ -712,7 +714,7 @@ int check_if_is_percent(char ***input_pt)
 */
 int check_if_is_number(char ***input_pt)
 {
-	/* 1. Хранилище объектов: */
+	/* 1. Объекты. */
 	struct Input input;
 	input.has_point = 0;
 
@@ -787,7 +789,7 @@ int check_if_is_number(char ***input_pt)
 */
 char identify_input(char **input_pt, double subtotal, struct Input input)
 {
-	/* 1. Хранилище объектов: */
+	/* 1. Объекты. */
 	struct Input input_state;
 	input_state.is_num = 0;
 	input_state.is_operator = 0;
