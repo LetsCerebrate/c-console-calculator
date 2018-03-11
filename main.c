@@ -1,43 +1,61 @@
-// Тренировочная задачка. Местами усложнено на пустом месте - понятно, что это плохая практика 
-// для реального проекта ("write dumb code", как говорят), но набить руку на фичах C (указатели,
-// работа с памятью) необходимо
+/*
+	Простой калькулятор для оболочки.	
+	By Goatish Priest. All right reversed.
 
+	Порядок работы цикла программы.
 
-/* Preprocessor directives */
+	1. Итеративно запрашивается input (*). 
+	2. input обрабатывается программой.
+		2.1. input'у определяется тип (**).
+		2.2. Проверяется, корректный ли input. 
+			Если некорректный, итерация сбрасывается (continue), и данный пункт становится последним.
+			Если корректный, программа переходит к следующему пункту.
+	3. Из input извлекаются данные. Программа получает операнды и операторы для вычислений.
+	4. Производятся вычисления. Выводится промежуточный итог.
+	5. Следующей итерации передаются необходимые данные о текущей.
+	6. Цикл завершается. 
+		Если цикл завершается без ошибок (без NaN), выводится итоговый результат вычислений.
+
+	(*)
+	Ввод '=' обрабатывается особо - такой input означает, что цикл нужно завершить.
+
+	(**)
+	Типы input:
+		'n' (number / число), double. Пример input'а: 10.0
+		'o' (operator / мат. бинарный оператор), char. Пример input'а: '+'
+		'p' (percent / процент), char. Это input '%'
+		'r' (root (sqrt) / квадратный корень), char. Это input 'r'
+*/
+
+/* Директивы для препроцессора. */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
-#include "include/objects.h"
+
+#include "include/general.h"
+#include "include/input.h"
  
-/* Objects */
+/* Объявление объектов и функций (прототипы). */
 
 extern char *math_operators_pt;
 extern char math_operators_arr[MAX_SIZE];
-
 struct Input;
-
-
-/* Functions prototypes */
-
-void print_help();
-void print_error(char **input_pt, struct Input input);
-void print_subtotal(double subtotal, struct Input input);
-
-char get_operator(char **input_pt);
+// void print_help();
 double get_num(char **input_pt);
-char identify_input(char **input_pt, double subtotal, struct Input input);
+char get_operator(char **input_pt);
 double get_subtotal(double subtotal, struct Input input);
-double reset_new_num(struct Input input);
-
+char identify_input(char **input_pt, double subtotal, struct Input input);
 int is_operator(char input_type);
 int is_num(char input_type);
 int is_percent(char input_type);
 int is_root(char input_type);
+void print_error(char **input_pt, struct Input input);
+void print_subtotal(double subtotal, struct Input input);
+double reset_new_num(struct Input input);
 
-
-/* Main */
+/* Main. */
 
 int main(int argc, char *argv[])
 {
@@ -66,7 +84,7 @@ int main(int argc, char *argv[])
 	input.current_operator = '\0'; // последний введенный оператор
 	input.prev_operator = '\0'; // оператор, введенный в предыдущем input - используется для расчетов в get_subtotal
 	input.new_num = 0.0; // последнее введенное число
-	input.old_num = 0.0; // "старое" число; в вычислениях не участвует, требуется для корректной работы print_subtotal
+	input.old_num = 0.0; // "старое" число; в вычислениях не участвует, требуется для функций print 
 	input.type = '\0'; // тип значения текущего input
 
 	/* last_input - структура для состояний о последнем input. */
@@ -78,7 +96,7 @@ int main(int argc, char *argv[])
 	last_input.was_percent = 0; // процент: '%'
 	last_input.was_root = 0; // корень (квадратный): 'r'
 
-	/* Начало. */
+	/* Introduction. */
 
 	printf("Please enter what you want to calculate. Enter \"=\" to get subtotal and quit.\n");
 
@@ -168,7 +186,7 @@ int main(int argc, char *argv[])
 			/* Только если subtotal уже "инициализирован". */
 			else
 			{
-				input.old_num = subtotal; // как указывалось выше, old_num предназначен для print_subtotal
+				input.old_num = subtotal;
 				subtotal = get_subtotal(subtotal, input); // получить результат вычислений
 
 				/* Вывести на экран промежуточный итог subtotal. */
