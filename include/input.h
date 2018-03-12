@@ -85,14 +85,14 @@ int is_root(char input_type)
 /* Функции для вывода данных. */
 
 /*
-	void print_help();
-
-	...
-
 */
 void print_help()
 {
-	printf("Acceptable operators are follows:\n  +\n  -\n  *\n  /\n  ^\n  %\n  r\n  =\n");
+	printf("Acceptable operators are follows:\n  '+' is addition operator: [5 + 2] = 7\
+	\n  '-' is subtraction operator: [5 - 2] = 3\n  '*' is multiplication operator: [5 * 2] = 10\
+	\n  '/' is division operator: [5 / 2] = 2.5\n  '^' is exponentiation operator: [5 ^ 2] = 25\
+	\n  '%%' is percentage operator: [1 + 50%%] = 1.5\n  'r' is square root operator: [25 r] = 5\
+	\n  '=' is operator which returns result\n");
 	return;
 }
 
@@ -153,19 +153,27 @@ void print_error(char **input_pt, struct Input input)
 */
 void print_subtotal(double subtotal, struct Input input)
 {
+	int tmp = 0;
+
 	/* 1. Ошибка в вычислениях (недопустимая операция). */
 	if ( (isnan(subtotal) || isinf(subtotal)) )
 	{
-		/* 1.1. Недопустимая операция с процентами. */
+		/* 1.1. Недопустимые операции с процентами. */
+
 		/* Происходит, когда input начинается со ввода процентов. */
 		if (input.old_num == input.new_num)
-			printf("[? and %f%%] Invalid operation!\n", input.old_num);
+			printf("[? %f%%] Invalid operation!\n", input.old_num);
+
+		/* Происходит, когда input также начинается со ввода процентов, но потом пользователь пытается ввести число.
+		prev_operator в таком случае теряется. */
+		else if (!input.prev_operator)
+			printf("[%f%% ?] Invalid operation!\n", input.old_num);
 
 		/* 1.2. Прочие недопустимые операции. */
 		else
 		{
 			printf("[%f %c %f] Invalid operation!\n", input.old_num, input.prev_operator, input.new_num);
-			printf("Subtotal was before last operation occured: %f\n", input.old_num);
+			printf("Subtotal was before invalid operation occured: %f\n", input.old_num);
 		}
 
 		/* 1.3. Закрыть программу. */
@@ -177,6 +185,15 @@ void print_subtotal(double subtotal, struct Input input)
 	/* 2.1. Вычисления с квадратным корнем. */
 	else if ( input.prev_operator == 'r' )
 		printf("[%c%f = %f]\n", SQRT_ASCII, input.old_num, subtotal);
+
+	else if ( input.prev_operator == '^' )
+	{
+		tmp = input.new_num;
+		if (tmp < 0)
+			tmp = (int) alter_num_sign((double) tmp);
+
+		printf("[%f %c %d = %f]\n", input.old_num, input.prev_operator, tmp, subtotal);
+	}
 
 	/* 2.2. Прочие вычисления. */
 	else if ( (input.old_num != subtotal) ) // отфильтровать лишние вызовы printf при работе с процентами
@@ -269,13 +286,13 @@ double get_subtotal(double subtotal, struct Input input)
 			return subtotal / input.new_num;
 
 		case '^':
-			/* num (если num != 0) в степени 0 равно 1. */
-			if (!input.new_num)
-				return 1.0;
-
 			/* 0 в степени 0 пусть будет... 0 (хотя, в сущности, это некорректная операция). */
-			else if (!input.new_num && !subtotal)
+			if (!input.new_num && !subtotal)
 				return 0.0;
+
+			/* num (если num != 0) в степени 0 равно 1. */
+			else if (!input.new_num)
+				return 1.0;
 
 			else
 			{

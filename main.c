@@ -1,6 +1,6 @@
 /*
 	Простой калькулятор для оболочки.	
-	By Goatish Priest. All right reversed.
+	By Goatish Priest, 2018. All right reversed.
 
 	Порядок работы цикла программы.
 
@@ -25,6 +25,10 @@
 		'o' (operator / мат. бинарный оператор), char. Пример input'а: '+'
 		'p' (percent / процент), char. Это input '%'
 		'r' (root (sqrt) / квадратный корень), char. Это input 'r'
+
+	Справка.
+	- Функция main может принимать первый аргумент "h" (help). Если запустить программу с данным аргументом, на 
+	экран будет	выведена справка.
 */
 
 /* Директивы для препроцессора. */
@@ -42,7 +46,7 @@
 extern char *math_operators_pt;
 extern char math_operators_arr[MAX_SIZE];
 struct Input;
-// void print_help();
+void print_help(); // ???
 double get_num(char **input_pt);
 char get_operator(char **input_pt);
 double get_subtotal(double subtotal, struct Input input);
@@ -57,8 +61,26 @@ double reset_new_num(struct Input input);
 
 /* Main. */
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[]) // v is an array of pts!
 {
+	if ( (argc > 1) && (*(argv[1]) == 'h') )
+	{
+		print_help();
+		return 0;
+	}
+
+	// if (argv[1])
+	// {
+	// 	// malloc ! and then free !
+	// 	char *str_pt;
+	// 	str_pt = argv[1];
+
+	// 	if (*str_pt == 'h')
+	// 	{
+	// 		print_help();
+	// 		return 0;
+	// 	}
+	// }
 
 	// printf("ARGS: %s, %d\n", argv[1], argc);
 	// if (argv[1] == "help" || argv[1] == "h") // why does it not work?
@@ -66,6 +88,13 @@ int main(int argc, char *argv[])
 	// 	print_help();
 	// 	return 0;
 	// }
+
+	// if (argc > 1) // why does it not work?
+	// {
+	// 	print_help();
+	// 	return 0;
+	// }
+
 
 	// printf("TEST: %d\n", "a" == "ab");
 
@@ -98,7 +127,8 @@ int main(int argc, char *argv[])
 
 	/* Introduction. */
 
-	printf("Please enter what you want to calculate. Enter \"=\" to get subtotal and quit.\n");
+	printf("Please enter what you want to calculate. Enter \"=\" to get subtotal and quit. If you wish to see\
+	brief help section, you may launch program with \"h\" argument, like so: \"./calc h\".\n");
 
 	/* 2. Основная часть. */
 
