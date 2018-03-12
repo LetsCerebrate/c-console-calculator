@@ -32,7 +32,7 @@ r
 Result is: 3.000000
 </pre>
 </details>
-If you'd like to close the program, you could just type ```=```. It would show the result of calculations or, at least, the subtotal value, and then would be closed.
+If you'd like to close the program, you could just type <code>=</code>. It would show the result of calculations or, at least, the subtotal value, and then would be closed.
 
 ## Some important things to note. Examples of use.
 The program handles input in accordance with its inner system of types of values. There're a number of such types:
