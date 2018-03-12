@@ -84,15 +84,46 @@ int is_root(char input_type)
 
 /* Функции для вывода данных. */
 
-/*
+/* 
+	void print_help();
+
+	Стек:
+		main / print_help
+
+	Функция print_help.
+		Выводит на экран содержимое файла справки.
 */
 void print_help()
 {
-	printf("Acceptable operators are follows:\n  '+' is addition operator: [5 + 2] = 7\
-	\n  '-' is subtraction operator: [5 - 2] = 3\n  '*' is multiplication operator: [5 * 2] = 10\
-	\n  '/' is division operator: [5 / 2] = 2.5\n  '^' is exponentiation operator: [5 ^ 2] = 25\
-	\n  '%%' is percentage operator: [1 + 50%%] = 1.5\n  'r' is square root operator: [25 r] = 5\
-	\n  '=' is operator which returns result\n");
+	/* 1. Объекты. */
+	char filename[] = "doc/help",
+		buff[5000]; // буфер для приема содержимого файла filename
+	FILE *fp = NULL;
+
+	register int count;
+
+	/* 2. Попытаться открыть файл. */
+	fp = fopen(filename, "r");
+
+	/* 2.1. Есть такой файл? Тогда прочитать и вывести его содержимое на экран. */
+	count = 0;
+
+	if (fp)
+	{
+		/* Левая часть условия для того, чтобы не получить segmentation fault в случае чего. */
+		while ( (count < sizeof(buff)) && (buff[count] = fgetc(fp)) != EOF )
+			count++;
+
+		buff[count] = '\0';
+
+		printf("%s\n", buff);
+		fclose(fp);
+	}
+
+	/* 2.2. Файл пропал? */
+	else
+		printf("The needed file \"%s\" hasn't been found! You may read README.md file to get the necessary information.\n", filename);
+
 	return;
 }
 

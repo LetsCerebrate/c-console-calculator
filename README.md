@@ -6,15 +6,16 @@ You can just download the binary file called ```calc.exe``` and launch it via yo
 ```
 ./calc.exe
 ```
-Also, you can launch the program with ```h``` (which means "help") argument to read a brief manual, like so:
+Also, you can launch the program with ```h``` (which means "help") argument to read a manual (which is a brief version of this README.md file, actually), like so:
 ```
 ./calc.exe h
 ```
+To do so, download directories ```bin``` and ```doc``` (and place them side by side), then you need to run the executable file from ```bin``` directory.
 
 ## How to use
 Please note that each value you want to feed the program must be put on a separate line (in other words, hit Enter every time you put the value to console).
 <details>
-<Summary>Example</Summary>
+<summary>In this way</summary>
 <pre>
 <b>Input:</b>
 6
@@ -31,7 +32,7 @@ r
 Result is: 3.000000
 </pre>
 </details>
-If you'd like to close the program, you could just type <code>=</code>. It would show the result of calculations or, at least, the subtotal value, and then would be closed.
+If you'd like to close the program, you could just type ```=```. It would show the result of calculations or, at least, the subtotal value, and then would be closed.
 
 ## Some important things to note. Examples of use.
 The program handles input in accordance with its inner system of types of values. There're a number of such types:
@@ -59,7 +60,7 @@ Result is: 13.000000
 </pre>
 </details>
 <details>
-<Summary>The same is correct for operators, as well.</Summary>
+<summary>The same is correct for operators, as well.</summary>
 <pre>
 <b>Input:</b>
 3
@@ -83,7 +84,7 @@ Result is: 3.000000
 </pre>
 Also, the program ignores meaningless input.
 <details>
-<Summary>Click to expand</Summary>
+<summary>Click to expand</summary>
 <pre>
 <b>Input:</b>
 something
@@ -103,7 +104,7 @@ Result is: 4.000000
 </details>
 It's also worth to note that when you do exponentiation, the program checks if the exponent's correct, and then it can "fix" the incorrect exponent.
 <details>
-<Summary>Click to expand</Summary>
+<summary>Click to expand</summary>
 <pre>
 <b>Input:</b>
 3
@@ -120,7 +121,7 @@ Result is: 9.000000
 </details>
 Finally, in the case of an invalid operation, the program prints what it's been able to calculate, and then it closes itself.
 <details>
-<Summary>Click to expand</Summary>
+<summary>Click to expand</summary>
 <pre>
 <b>Input:</b>
 2

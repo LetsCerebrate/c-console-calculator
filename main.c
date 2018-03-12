@@ -14,7 +14,7 @@
 	4. Производятся вычисления. Выводится промежуточный итог.
 	5. Следующей итерации передаются необходимые данные о текущей.
 	6. Цикл завершается. 
-		Если цикл завершается без ошибок (без NaN), выводится итоговый результат вычислений.
+		Если цикл завершается без ошибок (без получения NaN или Infinity), выводится итоговый результат вычислений.
 
 	(*)
 	Ввод '=' обрабатывается особо - такой input означает, что цикл нужно завершить.
@@ -28,7 +28,9 @@
 
 	Справка.
 	- Функция main может принимать первый аргумент "h" (help). Если запустить программу с данным аргументом, на 
-	экран будет	выведена справка.
+	экран будет	выведена краткая справка.
+
+	Подробнее о программе - в файле README.md.
 */
 
 /* Директивы для препроцессора. */
@@ -61,42 +63,14 @@ double reset_new_num(struct Input input);
 
 /* Main. */
 
-int main(int argc, char *argv[]) // v is an array of pts!
+int main(int argc, char *argv[])
 {
+	/* Справка. */
 	if ( (argc > 1) && (*(argv[1]) == 'h') )
 	{
 		print_help();
-		return 0;
+		return 0; // если вызвана справка, калькуляцию не предлагать
 	}
-
-	// if (argv[1])
-	// {
-	// 	// malloc ! and then free !
-	// 	char *str_pt;
-	// 	str_pt = argv[1];
-
-	// 	if (*str_pt == 'h')
-	// 	{
-	// 		print_help();
-	// 		return 0;
-	// 	}
-	// }
-
-	// printf("ARGS: %s, %d\n", argv[1], argc);
-	// if (argv[1] == "help" || argv[1] == "h") // why does it not work?
-	// {
-	// 	print_help();
-	// 	return 0;
-	// }
-
-	// if (argc > 1) // why does it not work?
-	// {
-	// 	print_help();
-	// 	return 0;
-	// }
-
-
-	// printf("TEST: %d\n", "a" == "ab");
 
 	/* 1. Объекты. */
 
@@ -143,17 +117,6 @@ int main(int argc, char *argv[]) // v is an array of pts!
 		/* Если введен '=', при проверке input.is_done программа будет завершена. */
 		if (is_operator(input.type) && (get_operator(&input_pt) == '='))
 			input.is_done = 1;
-
-
-		// printf("| | 1. subtotal? %f\n", subtotal);
-		// printf("| | 2. new_num? %f\n", input.new_num);
-		// printf("| | 3. current_operator? %c\n", input.current_operator);
-		// printf("| | 4. prev_operator? %c\n", input.prev_operator);
-		// printf("| | 5. type? %c\n\n", input.type);	
-
-		// printf("| | 1. was_operator? %d\n", last_input.was_operator);
-		// printf("| | 2. was_num? %d\n", last_input.was_num);
-		// printf("| | 3. was_percent? %d\n\n", last_input.was_percent);	
 
 		/* 2. Обработка некорректного input. */
 
@@ -248,3 +211,10 @@ int main(int argc, char *argv[]) // v is an array of pts!
 
 	return 0;
 }
+
+/* Output для дебага. */
+// printf("| | 1. subtotal? %f\n", subtotal);
+// printf("| | 2. new_num? %f\n", input.new_num);
+// printf("| | 3. current_operator? %c\n", input.current_operator);
+// printf("| | 4. prev_operator? %c\n", input.prev_operator);
+// printf("| | 5. type? %c\n\n", input.type);	
