@@ -39,27 +39,26 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
-
 #include "include/general.h"
 #include "include/input.h"
  
-/* Объявление объектов и функций (прототипы). */
+/* Объявление объектов, прототипы функций. */
 
 extern char *math_operators_pt;
 extern char math_operators_arr[MAX_SIZE];
 struct Input;
-void print_help(); // ???
+void print_help();
 double get_num(char **input_pt);
 char get_operator(char **input_pt);
 double get_subtotal(double subtotal, struct Input input);
 char identify_input(char **input_pt, double subtotal, struct Input input);
-int is_operator(char input_type);
-int is_num(char input_type);
-int is_percent(char input_type);
-int is_root(char input_type);
 void print_error(char **input_pt, struct Input input);
 void print_subtotal(double subtotal, struct Input input);
 double reset_new_num(struct Input input);
+int type_is_operator(char input_type);
+int type_is_num(char input_type);
+int type_is_percent(char input_type);
+int type_is_root(char input_type);
 
 /* Main. */
 
@@ -115,17 +114,17 @@ int main(int argc, char *argv[])
 
 		/* Знак '=' необходимо обработать особо. */
 		/* Если введен '=', при проверке input.is_done программа будет завершена. */
-		if (is_operator(input.type) && (get_operator(&input_pt) == '='))
+		if (type_is_operator(input.type) && (get_operator(&input_pt) == '='))
 			input.is_done = 1;
 
 		/* 2. Обработка некорректного input. */
 
 		/* 2.1. Собственно ошибка. */
 		if ( !input.type || 
-			( (!is_num(input.type) && (!last_input.was_num && !last_input.was_percent && !last_input.was_root)) ) ||
-			( is_operator(input.type) && last_input.was_operator ) ||
-			( is_num(input.type) && last_input.was_num ) ||
-			( is_percent(input.type) && (last_input.was_percent || last_input.was_root) ) )
+			( (!type_is_num(input.type) && (!last_input.was_num && !last_input.was_percent && !last_input.was_root)) ) ||
+			( type_is_operator(input.type) && last_input.was_operator ) ||
+			( type_is_num(input.type) && last_input.was_num ) ||
+			( type_is_percent(input.type) && (last_input.was_percent || last_input.was_root) ) )
 		/* Ветка срабатывает, если тип input неизвестен, т.е. '\0' */
 		/* Или: если ввод начинается не с числа. */
 		/* Или: если после ввода, например, числа вводится не оператор, а опять число - т.е. input того же типа. Однако
@@ -144,16 +143,16 @@ int main(int argc, char *argv[])
 		/* 2.2. Состояния, необходимые для идентификации некорректного input. */
 		/* Показывают, какого типа был предыдущий input. */
 
-		last_input.was_operator = is_operator(input.type);
-		last_input.was_num = is_num(input.type);
-		last_input.was_percent = is_percent(input.type);
-		last_input.was_root = is_root(input.type);
+		last_input.was_operator = type_is_operator(input.type);
+		last_input.was_num = type_is_num(input.type);
+		last_input.was_percent = type_is_percent(input.type);
+		last_input.was_root = type_is_root(input.type);
 	
 		/* 3. Извлечение данных из корректного input. */
 
 		/* 3.1. Если тип input - 'n', извлечь число из input. */
 		/* Для вычислений используется 2 числа: new_num и subtotal. Здесь мы обозначаем new_num. */
-		if (input.type && is_num(input.type))
+		if (input.type && type_is_num(input.type))
 			input.new_num = get_num(&input_pt);
 
 		/* 3.2. Если тип input - 'o', 'p' или 'r', извлечь оператор из input. */
@@ -164,7 +163,7 @@ int main(int argc, char *argv[])
 
 		/* Вычисления производятся только если текущий input имеет тип 'o', 'p' или 'r'. */
 		/* Однако типы 'p' и 'r' участвуют не во всех нижеприведенных операциях. */
-		if (input.type && !is_num(input.type))
+		if (input.type && !type_is_num(input.type))
 		{
 			/* 4.1. "Инициализация" промежуточного итога subtotal. */
 			/* Производится только 1 раз за цикл (очевидно), когда поступает 1-й new_num. */
@@ -185,12 +184,12 @@ int main(int argc, char *argv[])
 				/* Вывести на экран промежуточный итог subtotal. */
 				/* Но только если данный input имеет тип 'o' или 'r' (иначе при работе с процентами 'p' будет выводиться 
 				"лишний" subtotal). */
-				if (is_operator(input.type) || is_root(input.type))
+				if (type_is_operator(input.type) || type_is_root(input.type))
 					print_subtotal(subtotal, input);
 				
 				/* Если тип данного input - 'p', нужно "сбросить" значение new_num, чтобы корректно завершить вычисления, т.к.
 				new_num - процент. */
-				if (is_percent(input.type))
+				if (type_is_percent(input.type))
 					input.new_num = reset_new_num(input); // в зависимости от prev_operator присвоить 1.0 или 0.0
 			}
 		}

@@ -7,16 +7,16 @@
 /* Функции для определения типа input. */
 
 /* 	
-	int is_num(char input_type);
+	int type_is_num(char input_type);
 
 	Стек:
-		main / is_num
+		main / type_is_num
 
-	Функция is_num.
+	Функция type_is_num.
 		Если (char input_type) - символ 'n', возвращает 1.
 		В противном случае возвращает 0.
 */
-int is_num(char input_type)
+int type_is_num(char input_type)
 {
 	if (input_type == 'n')
 		return 1;
@@ -26,16 +26,16 @@ int is_num(char input_type)
 
 
 /* 
-	int is_operator(char input_type);
+	int type_is_operator(char input_type);
 
 	Стек:
-		main / is_operator
+		main / type_is_operator
 
-	Функция is_operator.
+	Функция type_is_operator.
 		Если (char input_type) - символ 'o', возвращает 1.
 		В противном случае возвращает 0.
 */
-int is_operator(char input_type)
+int type_is_operator(char input_type)
 {
 	if (input_type == 'o')
 		return 1;
@@ -45,16 +45,16 @@ int is_operator(char input_type)
 
 
 /* 	
-	int is_percent(char input_type);
+	int type_is_percent(char input_type);
 
 	Стек:
-		main / is_percent
+		main / type_is_percent
 
-	Функция is_percent.
+	Функция type_is_percent.
 		Если (char input_type) - символ 'p', возвращает 1.
 		В противном случае возвращает 0.
 */
-int is_percent(char input_type)
+int type_is_percent(char input_type)
 {
 	if (input_type == 'p')
 		return 1;
@@ -64,16 +64,16 @@ int is_percent(char input_type)
 
 
 /* 	
-	int is_root(char input_type);
+	int type_is_root(char input_type);
 
 	Стек:
-		main / is_root
+		main / type_is_root
 
-	Функция is_root.
+	Функция type_is_root.
 		Если (char input_type) - символ 'r', возвращает 1.
 		В противном случае возвращает 0.
 */
-int is_root(char input_type)
+int type_is_root(char input_type)
 {
 	if (input_type == 'r')
 		return 1;
@@ -467,16 +467,16 @@ double get_num(char **input_pt)
 
 
 /* 
-	int check_if_is_number(char ***input_pt);
+	int input_is_number(char ***input_pt);
 
 	Стек:
-		main / identify_input / check_if_is_number 
+		main / identify_input / input_is_number 
 
-	Функция check_if_is_number.
+	Функция input_is_number.
 		Если (char ***input_pt) - число, возвращает 1. 
 		В противном случае возвращает 0. 
 */
-int check_if_is_number(char ***input_pt)
+int input_is_number(char ***input_pt)
 {
 	/* 1. Объекты. */
 	struct Input input;
@@ -525,16 +525,16 @@ int check_if_is_number(char ***input_pt)
 
 
 /* 
-	int check_if_is_operator(char ***input_pt);
+	int input_is_operator(char ***input_pt);
 
 	Стек:
-		main / identify_input / check_if_is_operator
+		main / identify_input / input_is_operator
 
-	Функция check_if_is_operator.
+	Функция input_is_operator.
 		Если (char ***input_pt) - оператор, возвращает 1. 
 		В противном случае возвращает 0. 
 */
-int check_if_is_operator(char ***input_pt)
+int input_is_operator(char ***input_pt)
 {
 	/* 1. Объекты. */
 	char operators_list_src[MAX_SIZE] = {'=', '+', '-', '*', '/', '^', '%', '\0'};
@@ -585,16 +585,16 @@ int check_if_is_operator(char ***input_pt)
 
 
 /* 
-	int check_if_is_percent(char ***input_pt);
+	int input_is_percent(char ***input_pt);
 
 	Стек:
-		main / identify_input / check_if_is_percent
+		main / identify_input / input_is_percent
 
-	Функция check_if_is_percent.
+	Функция input_is_percent.
 		Если (char ***input_pt) - процент '%', возвращает 1. 
 		В противном случае возвращает 0. 
 */
-int check_if_is_percent(char ***input_pt)
+int input_is_percent(char ***input_pt)
 {
 	char *start = **input_pt;
 
@@ -610,16 +610,16 @@ int check_if_is_percent(char ***input_pt)
 
 
 /* 
-	int check_if_is_root(char ***input_pt);
+	int input_is_root(char ***input_pt);
 
 	Стек:
-		main / identify_input / check_if_is_root
+		main / identify_input / input_is_root
 
-	Функция check_if_is_root.
+	Функция input_is_root.
 		Если (char ***input_pt) - корень 'r', возвращает 1. 
 		В противном случае возвращает 0. 
 */
-int check_if_is_root(char ***input_pt)
+int input_is_root(char ***input_pt)
 {
 	char *start = **input_pt;
 
@@ -658,16 +658,16 @@ char identify_input(char **input_pt, double subtotal, struct Input input)
 	input_state.is_root = 0;
 
 	/* 2. Результат. Определение типа input ('n', 'o', 'p' или 'r'). */
-	if (input_state.is_percent = check_if_is_root(&input_pt))
+	if (input_state.is_percent = input_is_root(&input_pt))
 		return 'r';
 
-	else if (input_state.is_percent = check_if_is_percent(&input_pt))
+	else if (input_state.is_percent = input_is_percent(&input_pt))
 		return 'p';
 
-	else if (input_state.is_operator = check_if_is_operator(&input_pt))
+	else if (input_state.is_operator = input_is_operator(&input_pt))
 		return 'o';
 
-	else if (input_state.is_num = check_if_is_number(&input_pt))
+	else if (input_state.is_num = input_is_number(&input_pt))
 		return 'n';
 		
 	/* Если input некорректный (не соотв. ни одному типу). */
