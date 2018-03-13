@@ -20,7 +20,9 @@ struct Input
 	double old_num;
 	char type;
 
+	unsigned int has_percent : 1;
 	unsigned int has_point : 1;
+	unsigned int has_radical : 1;
 	unsigned int has_sign : 1;
 	unsigned int is_done : 1;
 	unsigned int is_num : 1; // для identify_input
@@ -94,6 +96,24 @@ int is_sign(char elem)
 int is_point(char elem)
 {
 	if (elem == '.')
+		return 1;
+	else
+		return 0;
+}
+
+
+
+int is_percent(char elem)
+{
+	if (elem == '%')
+		return 1;
+	else
+		return 0;
+}
+
+int is_radical(char elem)
+{
+	if (elem == 'r')
 		return 1;
 	else
 		return 0;

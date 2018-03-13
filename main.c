@@ -72,12 +72,11 @@ int main(int argc, char *argv[])
 	}
 
 	/* 1. Объекты. */
-
 	char *input_pt; // input хранится в статической переменной
-	double subtotal = 0.0; // промежуточный итог
+	double subtotal = 0.0, // промежуточный итог
+		result = 0.0; // ???
 
 	/* input - структура для данных об input. */
-
 	struct Input input;
 
 	input.is_done = 0; // введено ли '='
@@ -90,7 +89,6 @@ int main(int argc, char *argv[])
 	input.type = '\0'; // тип значения текущего input
 
 	/* last_input - структура для состояний о последнем input. */
-
 	struct Input last_input;
 
 	last_input.was_num = 0; // число, т.е. операнд
@@ -99,12 +97,10 @@ int main(int argc, char *argv[])
 	last_input.was_root = 0; // корень (квадратный): 'r'
 
 	/* Introduction. */
-
 	printf("Please enter what you want to calculate. Enter \"=\" to get subtotal and quit. If you wish to see\
 	brief help section, you may launch program with \"h\" argument, like so: \"./calc h\".\n");
 
 	/* 2. Основная часть. */
-
 	while (1) // цикл прервется, если будет введено '='
 	{
 		/* 1. Запрос input. */
@@ -116,6 +112,14 @@ int main(int argc, char *argv[])
 		/* Если введен '=', при проверке input.is_done программа будет завершена. */
 		if (type_is_operator(input.type) && (get_operator(&input_pt) == '='))
 			input.is_done = 1;
+
+
+// printf("| | 1. subtotal? %f\n", subtotal);
+// printf("| | 2. new_num? %f\n", input.new_num);
+// printf("| | 3. current_operator? %c\n", input.current_operator);
+// printf("| | 4. prev_operator? %c\n", input.prev_operator);
+// printf("| | 5. type? %c\n\n", input.type);	
+
 
 		/* 2. Обработка некорректного input. */
 
@@ -184,8 +188,8 @@ int main(int argc, char *argv[])
 				/* Вывести на экран промежуточный итог subtotal. */
 				/* Но только если данный input имеет тип 'o' или 'r' (иначе при работе с процентами 'p' будет выводиться 
 				"лишний" subtotal). */
-				if (type_is_operator(input.type) || type_is_root(input.type))
-					print_subtotal(subtotal, input);
+				// if (type_is_operator(input.type) || type_is_root(input.type))
+					// print_subtotal(subtotal, input);
 				
 				/* Если тип данного input - 'p', нужно "сбросить" значение new_num, чтобы корректно завершить вычисления, т.к.
 				new_num - процент. */
@@ -194,9 +198,11 @@ int main(int argc, char *argv[])
 			}
 		}
 
+		/* Вывести на экран вычисления и input. */
+		print_subtotal(subtotal, input);
+
 		/* 5. Данные о текущем input для обработки следующего. */
-		/* '%' не сохранять! В функции get_subtotal случай с оператором '%' будет обрабатываться особо. */
-		if (input.current_operator && (input.current_operator != '%'))
+		if (input.current_operator)
 			input.prev_operator = input.current_operator;
 
 		/* Введено ли '='? Если да, прервать цикл. */
