@@ -249,7 +249,6 @@ double get_num(char **input_pt, double subtotal)
 
 	input.has_percent = 0;
 	input.has_point = 0;
-	input.has_radical = 0;
 	
 	char elem = '\0'; // псевдоним для **input_pt внутри цикла
 
@@ -273,10 +272,9 @@ double get_num(char **input_pt, double subtotal)
 	{
 		/* Если натыкаемся на точку, фиксируем это и пропускаем ее (ее наличие отразится в дальнейшем 
 		на переменной remainder). */
-		/* Если натыкаемся на символ '%' или 'r', также фиксируем это и пропускаем данный элемент. */
+		/* Если натыкаемся на символ '%', также фиксируем это и пропускаем данный элемент. */
 		if ( ( !input.has_point && (input.has_point = is_point(elem)) ) ||
-		( !input.has_percent && (input.has_percent = is_percent(elem)) ) || 
-		( !input.has_radical && (input.has_radical = is_radical(elem)) ) )
+		( !input.has_percent && (input.has_percent = is_percent(elem)) ))
 		{
 			(*input_pt)++;
 			continue;
@@ -307,13 +305,7 @@ double get_num(char **input_pt, double subtotal)
 
 	/* 4. Результат. */
 	if (input.has_percent)
-	{
 		return get_percentage(subtotal, result);
-		// return result / 100.0; // 75% -> 0.75
-	}
-
-	else if (input.has_radical)
-		return sqrt(result);
 
 	else
 		return result;
@@ -339,7 +331,7 @@ int input_is_number(char ***input_pt)
 	struct Input input;
 	input.has_percent = 0;
 	input.has_point = 0;
-	input.has_radical = 0;
+	// input.has_radical = 0;
 
 	char elem = '\0'; // псевдоним для ***input_pt внутри цикла
 
@@ -367,17 +359,13 @@ int input_is_number(char ***input_pt)
 			continue; 
 		}
 
-		/* Элемент - '%', 'r' или цифра? Если ни одно из трех, вернуть 0. */
+		/* Элемент - '%' или цифра? Если ни одно из двух, вернуть 0. */
 		else if ( !( 
-			!(input.has_percent || input.has_radical) && (input.has_percent = is_percent(elem)) || // (1)
-			!(input.has_percent || input.has_radical) && (input.has_radical = is_radical(elem)) || // (2)
-			is_digit(elem) // (3)
+			!input.has_percent && (input.has_percent = is_percent(elem)) || // (1)
+			is_digit(elem) // (2)
 		))
-		/* 1) если элемент - '%', ok, зафиксировать это. Символ '%' должен быть в ед. ч., плюс помимо
-		него в массиве не	должно быть символа 'r' */
-		/* 2) или: если элемент - 'r', ok, зафиксировать это. Символ 'r' должен быть в ед. ч., плюс помимо
-		него в массиве не	должно быть символа '%' */
-		/* 3) или: элемент - цифра? */
+		/* 1) Если элемент - '%', ok, зафиксировать это. Символ '%' должен быть в ед. ч. */
+		/* 2) Или: элемент - цифра? */
 
 		{
 			**input_pt = start;
@@ -387,10 +375,8 @@ int input_is_number(char ***input_pt)
 		(**input_pt)++;
 	}
 
-	/* Символ '%' или 'r' должен быть последним значащим элементом массива, например: {'5', '%', '/0'} */
-	/* Эти символы считаются здесь постфиксными операторами. */
-	if ( input.has_percent && !is_percent( *((**input_pt) - 1) ) || 
-	input.has_radical && !is_radical( *((**input_pt) - 1) ) )
+	/* Символ '%' должен быть последним значащим элементом массива, например: {'5', '%', '/0'} */
+	if ( input.has_percent && !is_percent( *((**input_pt) - 1) ))
 		return 0;
 
 	**input_pt = start;
@@ -631,32 +617,35 @@ void print_error(char **input_pt, struct Input input)
 
 	*input_pt = start;
 
-
-// printf("| | 1. tmp? %f\n", input.tmp);
-// printf("| | 3. new_num? %f\n", input.new_num);
-// printf("| | 5. opr? %c\n", input.opr);
-// printf("| | 6. type? %c\n", input.type);		
-
 	/* 3. Результат. */
-	// if (input.type == 'n')
-	// 	printf("Invalid input: \"%s\". Please enter operator.\n", input_str);
-	if (input.type == 'o')
-		printf("Invalid input: \"%s\". Please enter number.\n", input_str);
+
+	/* Вычисления, приведшие к NaN или Infinity. */
+	if (isnan(input.tmp) || isinf(input.tmp))
+	{
+		if (type_is_root(input.type))
+			printf("  Invalid input: \"%s\". Input's been withdrawn. You may enter operator to continue your calculations with subtotal shown above.\n", 
+			input_str);
+
+		else
+			printf("  Invalid input: \"%s\". Input's been withdrawn. Please: 1) enter different number to finish this expression, or 2) enter operator to make different expression with subtotal shown above.\n", 
+			input_str);
+	}
+
+	/* Если ввод начинается с оператора или символа 'r'. */
+	else if (input.type == 'o' || input.type == 'r')
+		printf("  Invalid input: \"%s\". Please enter number.\n", input_str);
+
+	/* Если у input неопределенный тип. */
 	else if (!input.type)
-		printf("Invalid input: \"%s\". Please enter something meaningful.\n", input_str);
+		printf("  Invalid input: \"%s\". Please enter something meaningful.\n", input_str);
 
-	/* */
-	else if ((isnan(input.tmp) || isinf(input.tmp)) && type_is_root(input.type))
-		printf("Invalid input: \"%s\". Input's been withdrawn. You may enter operator to continue your calculations.\n", input_str);
+	/* Если после ввода 'r' вводится число. */
+	else if (type_is_num && input.opr == 'r')
+		printf("  Invalid input: \"%s\". Please enter operator.\n", input_str);
 
-	else if (isnan(input.tmp) || isinf(input.tmp))
-		printf("Invalid input: \"%s\". Input's been withdrawn. Please enter different number to finish this\
-		expression or leave it behind by continuing your calculations.\n", input_str);
-
-
-
-	else // для input "4 r 1"; условие не помешало бы
-		printf("Invalid input: \"%s\". Please enter operator.\n", input_str);
+	/* Остальные гипотетические сценарии. */
+	else
+		printf("  Invalid input: \"%s\".\n", input_str);
 
 	return;
 }
@@ -667,137 +656,61 @@ void print_error(char **input_pt, struct Input input)
 
 	Стек:
 		main / print_subtotal
-		main / do_math / print_subtotal
 
 	Функция print_subtotal.
 		Выводит результаты вычислений.
 */
 void print_subtotal(double subtotal, struct Input input)
 {
-	if ((isnan(input.tmp) || isinf(input.tmp)) && type_is_root(input.type))
-		printf("[%c%f] Invalid operation!\n", SQRT_ASCII, input.radicand);
+	/* 1. Объекты. */
+	int exp_tmp = 0; // показатель степени
 
-	else if (input.opr && (input.opr == 'r'))
-	{
-		// printf("[%c%f = %f]\n", SQRT_ASCII, subtotal, input.tmp);
-
-		printf("[%c%f = %f]\n", SQRT_ASCII, subtotal, input.tmp);
-	}
-
-
-
-
-	else if (isnan(input.tmp) || isinf(input.tmp))
-	{
-		if (input.opr)
-			printf("[%f %c %f] Invalid operation!\n", subtotal, input.opr, input.new_num);
-		else
-			// printf("Invalid operation! Please enter number.\n");
-			printf("Invalid operation!\n");
-	}
-
-	else if (input.opr)
-		printf("[%f %c %f = %f]\n", subtotal, input.opr, input.new_num, input.tmp);
-
-
-
-	if (!(isnan(input.tmp) || isinf(input.tmp)))
-		printf("Subtotal is: %f\n", input.tmp);
+	/* 2. Отдельный вывод промежуточного итога. */
+	if (!is_bad_num(input.tmp))
+		printf("  Subtotal is: %f\n", input.tmp);
 	else
-		printf("Subtotal is: %f\n", subtotal);
+		printf("  Subtotal is: %f\n", subtotal);
 
-	// else if (isnan(input.tmp) || isinf(input.tmp))
-		// print_error(NULL, input);
+	/* 3. Вывод на экран введенных выражений. */
+	/* 3.1. Вывод выражений, приведших к NaN или Infinity. */
+	if (is_bad_num(input.tmp))
+	{
+		/* Попытка извлечь корень из отриц. числа. */
+		if (type_is_root(input.type))
+			printf("  [%c%f] Invalid operation!\n", SQRT_ASCII, input.radicand);
 
+		/* Остальное (деление на 0, в частности). */
+		else
+		{
+			if (input.opr)
+				printf("  [%f %c %f] Invalid operation!\n", subtotal, input.opr, input.new_num);
+			else
+				printf("  Invalid operation!\n");
+		}
+	}
 
+	/* 3.2. Вывод выражений с указанным оператором. */
+	else if (input.opr)
+	{
+		/* Корень. */
+		if (input.opr == 'r')
+			printf("  [%c%f = %f]\n", SQRT_ASCII, subtotal, input.tmp);
 
-		// result = do_math(subtotal, input); // это в main
-		
-		// printf("| | 1. subtotal? %f\n", subtotal);
-		// printf("| | 2. new_num? %f\n", input.new_num);
-		// printf("| | 3. old_num? %f\n", input.old_num);
-		// printf("| | 4. current_operator? %c\n", input.current_operator);
-		// printf("| | 5. prev_operator? %c\n", input.opr);
-		// printf("| | 6. type? %c\n\n", input.type);	
+		/* Возведение в степень. */
+		/* Приводит показатель степени к удобоваримому виду: -3.75 -> 3 */
+		else if (input.opr == '^')
+		{
+			exp_tmp = input.new_num;
+			if (exp_tmp < 0)
+				exp_tmp = (int) alter_num_sign((double) exp_tmp);
 
-		// if ( (input.old_num != subtotal) ) // отфильтровать лишние вызовы printf при работе с процентами
-		// printf("[%f %c %f = %f]\n", input.old_num, input.opr, input.new_num, subtotal);
+			printf("  [%f %c %d = %f]\n", subtotal, input.opr, exp_tmp, input.tmp);
+		}
 
-
-		// if (input.opr)
-		// 	printf("[%f %c %f = %f]\n", input.old_num, input.opr, input.new_num, subtotal);
-			// printf("[%f %c %f = %f]\n", subtotal, input.opr, input.new_num, result);
-
-		// else if (input.opr == 'r')
-		// 	printf("!!! SQRT\n", subtotal, input.opr, input.new_num, result);
-	
-
-
-
-	// if (type_is_root(input.type))
-	// 	printf("[%c%f = %f]\n", SQRT_ASCII, subtotal, result);
-
-
-
-	// int tmp = 0;
-
-	// /* Вывести на экран вычисления. */
-	// /* Но только если данный input имеет тип 'n'. */
-	// if (type_is_num(input.type))
-	// {
-
-	// 	/* 1. Ошибка в вычислениях (недопустимая операция). */
-	// 	if ( (isnan(subtotal) || isinf(subtotal)) )
-	// 	{
-	// 		/* 1.1. Недопустимые операции с процентами. */
-	
-	// 		/* Происходит, когда input начинается со ввода процентов. */
-	// 		if (input.old_num == input.new_num)
-	// 			printf("[? %f%%] Invalid operation!\n", input.old_num);
-	
-	// 		/* Происходит, когда input также начинается со ввода процентов, но потом пользователь пытается ввести число.
-	// 		prev_operator в таком случае теряется. */
-	// 		else if (!input.opr)
-	// 			printf("[%f%% ?] Invalid operation!\n", input.old_num);
-	
-	// 		/* 1.2. Прочие недопустимые операции. */
-	// 		else
-	// 		{
-	// 			printf("[%f %c %f] Invalid operation!\n", input.old_num, input.opr, input.new_num);
-	// 			printf("Subtotal was before invalid operation occured: %f\n", input.old_num);
-	// 		}
-	
-	// 		/* 1.3. Закрыть программу. */
-	// 		exit(1);
-	// 	}
-	
-	// 	/* 2. Корректные вычисления. */
-	
-	// 	/* 2.1. Вычисления с квадратным корнем. */
-	// 	else if ( input.opr == 'r' )
-	// 		printf("[%c%f = %f]\n", SQRT_ASCII, input.old_num, subtotal);
-	
-	// 	else if ( input.opr == '^' )
-	// 	{
-	// 		tmp = input.new_num;
-	// 		if (tmp < 0)
-	// 			tmp = (int) alter_num_sign((double) tmp);
-	
-	// 		printf("[%f %c %d = %f]\n", input.old_num, input.opr, tmp, subtotal);
-	// 	}
-	
-	// 	/* 2.2. Прочие вычисления. */
-	// 	else if ( (input.old_num != subtotal) ) // отфильтровать лишние вызовы printf при работе с процентами
-	// 		printf("[%f %c %f = %f]\n", input.old_num, input.opr, input.new_num, subtotal);
-
-	// }
-
-	/* Вывести на экран промежуточный итог. */
-	// else if (type_is_num(input.type)) // num и percent
-	// {
-	// 	printf("Subtotal: %f\n", subtotal);
-
-	// }
+		/* Прочие бинарные операторы. */
+		else
+			printf("  [%f %c %f = %f]\n", subtotal, input.opr, input.new_num, input.tmp);
+	}
 
 	return;
 }

@@ -76,9 +76,6 @@ int main(int argc, char *argv[])
 	double subtotal = 0.0; // промежуточный итог и итоговый результат
 
 
-
-	int error_code = 0;
-
 	/* input - структура для данных об input. */
 	struct Input input;
 
@@ -102,7 +99,7 @@ int main(int argc, char *argv[])
 
 	/* Introduction. */
 	printf("Please enter what you want to calculate. Enter \"=\" to get subtotal and quit. If you wish to see\
-	brief help section, you may launch program with \"h\" argument, like so: \"./calc h\".\n");
+	brief help section, you may launch program with \"h\" argument, like so: \"./calc h\".\n\n");
 
 	/* 2. Основная часть. */
 	while (1) // цикл прервется, если будет введено '='
@@ -130,23 +127,18 @@ int main(int argc, char *argv[])
 		/* Ветка срабатывает, если тип input неизвестен, т.е. '\0' */
 		!input.type ||
 
-		/* Или: если мат. операции проводятся с NaN или Infinity. */
-		( type_is_operator(input.type) && (isnan(input.tmp) || isinf(input.tmp) )) ||
+		/* Или: если в ходе вычислений был получен NaN или Infinity. */
+		( type_is_operator(input.type) && is_bad_num(input.tmp) ) ||
 
+		/* Или: если был введен оператор 'r', а потом сразу число. */
+		( type_is_num(input.type) && input.opr == 'r' ) ||
 
-		/* Или: если был вверед оператор 'r', а потом сразу число. */
-		// ( type_is_num(input.type) && last_input.was_root ) ||
-		( type_is_num(input.type) && ((last_input.was_root) || input.opr == 'r') ) ||
-
+		/* Или: если ввод начинается *не* с числа. */
+		/* Однако разрешается ввести другой оператор после ввода оператора. */
 		( !type_is_num(input.type) && !(last_input.was_num || last_input.was_root) &&
 			!(type_is_operator(input.type) && last_input.was_operator) ))
-		
-		
-		
-		/* Или: если ввод начинается *не* с числа. */
-			/* Однако разрешается ввести другой оператор после ввода оператора. */
 		{
-			/* Введено ли '='? Если да, прервать цикл. */
+			/* Был ли запрос на выход? Если да, прервать цикл. */
 			if (input.is_done)
 				break;
 
@@ -208,7 +200,7 @@ int main(int argc, char *argv[])
 				if (input.opr)
 					input.tmp = do_math(subtotal, input);
 
-				if (isnan(input.tmp) || isinf(input.tmp))
+				if (is_bad_num(input.tmp))
 				{
 					print_subtotal(subtotal, input);
 					print_error(&input_pt, input);
@@ -247,13 +239,12 @@ int main(int argc, char *argv[])
 		last_input.was_root = type_is_root(input.type);
 
 
-		/* Введено ли '='? Если да, прервать цикл. */
+		/* Был ли запрос на выход? Если да, прервать цикл. */
 		if (input.is_done)
 			break;
 	}
 
-  /* 6. Вывести итоговый результат. */
-  /* Не распространяется на случаи с некорректным вводом: в таких случая происходит exit(1) раньше. */
+	/* 6. Вывести итоговый результат. */
 	printf("Result is: %f\n", subtotal);
 
 	return 0;

@@ -114,9 +114,9 @@ int is_percent(char elem)
 		return 0;
 }
 
-int is_radical(char elem)
+int is_bad_num(double num)
 {
-	if (elem == 'r')
+	if (isnan(num) || isinf(num))
 		return 1;
 	else
 		return 0;
