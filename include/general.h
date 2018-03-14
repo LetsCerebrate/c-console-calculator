@@ -14,10 +14,12 @@
 
 struct Input
 {
-	char current_operator;
-	char prev_operator;
+	char opr;
 	double new_num;
 	double old_num;
+
+	double tmp;
+
 	char type;
 
 	unsigned int has_percent : 1;
@@ -25,11 +27,11 @@ struct Input
 	unsigned int has_radical : 1;
 	unsigned int has_sign : 1;
 	unsigned int is_done : 1;
+	unsigned int is_initialized : 1;
 	unsigned int is_num : 1; // для identify_input
 	unsigned int is_operator : 1; // для identify_input
 	unsigned int is_percent : 1; // для identify_input
 	unsigned int is_root : 1; // для identify_input
-	unsigned int subtotal_is_initialized : 1;
 	unsigned int was_num : 1;
 	unsigned int was_operator : 1;
 	unsigned int was_percent : 1;
@@ -230,6 +232,9 @@ double pow(double num, double exp)
 
 /* 
 	double get_percentage(double num, double prc);
+
+	Стек:
+		main / get_num / get_percentage
 
 	Функция get_percentage.
 		Возвращает указанный процент от числа num.

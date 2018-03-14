@@ -48,9 +48,9 @@ extern char *math_operators_pt;
 extern char math_operators_arr[MAX_SIZE];
 struct Input;
 void print_help();
-double get_num(char **input_pt);
+double get_num(char **input_pt, double subtotal);
 char get_operator(char **input_pt);
-double get_subtotal(double subtotal, struct Input input);
+double do_math(double subtotal, struct Input input);
 char identify_input(char **input_pt, double subtotal, struct Input input);
 void print_error(char **input_pt, struct Input input);
 void print_subtotal(double subtotal, struct Input input);
@@ -73,28 +73,29 @@ int main(int argc, char *argv[])
 
 	/* 1. Объекты. */
 	char *input_pt; // input хранится в статической переменной
-	double subtotal = 0.0, // промежуточный итог
-		result = 0.0; // ???
+	double subtotal = 0.0; // промежуточный итог и итоговый результат
+
+	double radicand = 0.0; // подкоренное выражение; для корректного вывода результата
 
 	/* input - структура для данных об input. */
 	struct Input input;
 
 	input.is_done = 0; // введено ли '='
-	input.subtotal_is_initialized = 0; // присвоено ли переменной subtotal первое число, введенное пользователем
+	input.is_initialized = 0; // присвоено ли переменной subtotal первое число, введенное пользователем
 
-	input.current_operator = '\0'; // последний введенный оператор
-	input.prev_operator = '\0'; // оператор, введенный в предыдущем input - используется для расчетов в get_subtotal
+	input.opr = '\0'; // текущий введенный оператор
 	input.new_num = 0.0; // последнее введенное число
-	input.old_num = 0.0; // "старое" число; в вычислениях не участвует, требуется для функций print 
-	input.type = '\0'; // тип значения текущего input
+
+	input.tmp = 0.0; // "подменяет" subtotal
+
+	input.type = '\0'; // тип значения текущего input: 'n', 'o' или 'r'
 
 	/* last_input - структура для состояний о последнем input. */
+	/* Необходима для обработки некорректного input. */
 	struct Input last_input;
-
-	last_input.was_num = 0; // число, т.е. операнд
-	last_input.was_operator = 0; // бинарный оператор: '+', '-', ... , '^'
-	last_input.was_percent = 0; // процент: '%'
-	last_input.was_root = 0; // корень (квадратный): 'r'
+	last_input.was_num = 0;
+	last_input.was_operator = 0;
+	last_input.was_root = 0;
 
 	/* Introduction. */
 	printf("Please enter what you want to calculate. Enter \"=\" to get subtotal and quit. If you wish to see\
@@ -114,25 +115,26 @@ int main(int argc, char *argv[])
 			input.is_done = 1;
 
 
-// printf("| | 1. subtotal? %f\n", subtotal);
-// printf("| | 2. new_num? %f\n", input.new_num);
-// printf("| | 3. current_operator? %c\n", input.current_operator);
-// printf("| | 4. prev_operator? %c\n", input.prev_operator);
-// printf("| | 5. type? %c\n\n", input.type);	
+// printf("| | 1. tmp? %f\n", input.tmp);
+// printf("| | 2. subtotal? %f\n", subtotal);
+// printf("| | 3. new_num? %f\n", input.new_num);
+// printf("| | 5. opr? %c\n", input.opr);
+// printf("| | 6. type? %c\n", input.type);		
 
 
 		/* 2. Обработка некорректного input. */
+		if ( !input.type ||
 
-		/* 2.1. Собственно ошибка. */
-		if ( !input.type || 
-			( (!type_is_num(input.type) && (!last_input.was_num && !last_input.was_percent && !last_input.was_root)) ) ||
-			( type_is_operator(input.type) && last_input.was_operator ) ||
-			( type_is_num(input.type) && last_input.was_num ) ||
-			( type_is_percent(input.type) && (last_input.was_percent || last_input.was_root) ) )
+		( type_is_operator(input.type) && (isnan(input.tmp) || isinf(input.tmp) )) ||
+
+		( type_is_num(input.type) && last_input.was_root ) ||
+		( !type_is_num(input.type) && !(last_input.was_num || last_input.was_root) &&
+			!(type_is_operator(input.type) && last_input.was_operator) ))
 		/* Ветка срабатывает, если тип input неизвестен, т.е. '\0' */
-		/* Или: если ввод начинается не с числа. */
-		/* Или: если после ввода, например, числа вводится не оператор, а опять число - т.е. input того же типа. Однако
-		на извлечение корня данное правило не распространяется. */
+		/* Или: если мат. операции проводятся с NaN или Infinity. */
+		/* Или: если был вверед оператор 'r', а потом сразу число. */
+		/* Или: если ввод начинается *не* с числа. */
+			/* Однако разрешается ввести другой оператор после ввода оператора. */
 		{
 			/* Введено ли '='? Если да, прервать цикл. */
 			if (input.is_done)
@@ -144,66 +146,96 @@ int main(int argc, char *argv[])
 			/* Если input некорректный, не извлекать данные из него: прервать итерацию. */
 		}
 
-		/* 2.2. Состояния, необходимые для идентификации некорректного input. */
-		/* Показывают, какого типа был предыдущий input. */
 
-		last_input.was_operator = type_is_operator(input.type);
-		last_input.was_num = type_is_num(input.type);
-		last_input.was_percent = type_is_percent(input.type);
-		last_input.was_root = type_is_root(input.type);
 	
 		/* 3. Извлечение данных из корректного input. */
 
 		/* 3.1. Если тип input - 'n', извлечь число из input. */
 		/* Для вычислений используется 2 числа: new_num и subtotal. Здесь мы обозначаем new_num. */
 		if (input.type && type_is_num(input.type))
-			input.new_num = get_num(&input_pt);
+		{
+			// if (get_num(&input_pt, subtotal))
+			input.new_num = get_num(&input_pt, subtotal);
+
+			// if (isnan(input.tmp) || isinf(input.tmp))
+
+		}
 
 		/* 3.2. Если тип input - 'o', 'p' или 'r', извлечь оператор из input. */
 		else
-			input.current_operator = get_operator(&input_pt); // получаем оператор
+			input.opr = get_operator(&input_pt); // получаем оператор
+
+// printf("| | 1. tmp? %f\n", input.tmp);
+// printf("| | 2. subtotal? %f\n", subtotal);
+// printf("| | 3. new_num? %f\n", input.new_num);
+// printf("| | 5. opr? %c\n", input.opr);
+// printf("| | 6. type? %c\n", input.type);	
 
 		/* 4. Обработка извлеченных данных. */
 
-		/* Вычисления производятся только если текущий input имеет тип 'o', 'p' или 'r'. */
-		/* Однако типы 'p' и 'r' участвуют не во всех нижеприведенных операциях. */
-		if (input.type && !type_is_num(input.type))
+
+
+
+
+
+		/* Если input имеет тип 'n' или 'r'. */
+		if (input.type && (type_is_num(input.type) || type_is_root(input.type)))
 		{
 			/* 4.1. "Инициализация" промежуточного итога subtotal. */
 			/* Производится только 1 раз за цикл (очевидно), когда поступает 1-й new_num. */
-			/* В дальнейшем subtotal изменяется уже на основании вычислений. */
-			if (!input.subtotal_is_initialized && !input.prev_operator)
+			if (/*!input.is_initialized && */!input.opr)
 			{
-				subtotal = input.new_num;
-				input.subtotal_is_initialized = 1;
+				input.tmp = input.new_num;
+				// input.is_initialized = 1;
 			}
 
 			/* 4.2. Произвести вычисления. */
 			/* Только если subtotal уже "инициализирован". */
 			else
 			{
-				input.old_num = subtotal;
-				subtotal = get_subtotal(subtotal, input); // получить результат вычислений
+				radicand = input.tmp;
 
-				/* Вывести на экран промежуточный итог subtotal. */
-				/* Но только если данный input имеет тип 'o' или 'r' (иначе при работе с процентами 'p' будет выводиться 
-				"лишний" subtotal). */
-				// if (type_is_operator(input.type) || type_is_root(input.type))
-					// print_subtotal(subtotal, input);
-				
-				/* Если тип данного input - 'p', нужно "сбросить" значение new_num, чтобы корректно завершить вычисления, т.к.
-				new_num - процент. */
-				if (type_is_percent(input.type))
-					input.new_num = reset_new_num(input); // в зависимости от prev_operator присвоить 1.0 или 0.0
+				if (input.opr)
+					input.tmp = do_math(subtotal, input);
+
+				if (isnan(input.tmp) || isinf(input.tmp))
+				{
+					print_subtotal(subtotal, input);
+					print_error(&input_pt, input);
+
+					input.tmp = subtotal;
+					continue;
+				}
 			}
+
+
+
+			/* Вывести на экран вычисления и input. */
+			if (type_is_num(input.type))
+				print_subtotal(subtotal, input);
+
+			else if (type_is_root(input.type))
+				print_subtotal(radicand, input);
 		}
 
-		/* Вывести на экран вычисления и input. */
-		print_subtotal(subtotal, input);
+		/* Если input имеет тип 'o'. */
+		else if (input.type && type_is_operator(input.type)) // elif для лучшей читаемости
+			subtotal = input.tmp;
+
+
 
 		/* 5. Данные о текущем input для обработки следующего. */
-		if (input.current_operator)
-			input.prev_operator = input.current_operator;
+
+
+
+
+		/* 2.2. Состояния, необходимые для идентификации некорректного input. */
+		/* Показывают, какого типа был предыдущий input. */
+
+		last_input.was_operator = type_is_operator(input.type);
+		last_input.was_num = type_is_num(input.type);
+		last_input.was_root = type_is_root(input.type);
+
 
 		/* Введено ли '='? Если да, прервать цикл. */
 		if (input.is_done)
@@ -218,8 +250,8 @@ int main(int argc, char *argv[])
 }
 
 /* Output для дебага. */
-// printf("| | 1. subtotal? %f\n", subtotal);
-// printf("| | 2. new_num? %f\n", input.new_num);
-// printf("| | 3. current_operator? %c\n", input.current_operator);
-// printf("| | 4. prev_operator? %c\n", input.prev_operator);
-// printf("| | 5. type? %c\n\n", input.type);	
+// printf("| | 1. tmp? %f\n", input.tmp);
+// printf("| | 2. subtotal? %f\n", subtotal);
+// printf("| | 3. new_num? %f\n", input.new_num);
+// printf("| | 5. opr? %c\n", input.opr);
+// printf("| | 6. type? %c\n", input.type);	
