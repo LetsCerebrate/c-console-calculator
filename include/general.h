@@ -17,6 +17,7 @@ struct Input
 	char opr;
 	double new_num;
 	double old_num;
+	double radicand;
 
 	double tmp;
 

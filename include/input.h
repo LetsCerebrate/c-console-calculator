@@ -412,7 +412,7 @@ int input_is_number(char ***input_pt)
 int input_is_operator(char ***input_pt)
 {
 	/* 1. Объекты. */
-	char operators_list_src[MAX_SIZE] = {'=', '+', '-', '*', '/', '^', '%', '\0'};
+	char operators_list_src[MAX_SIZE] = {'=', '+', '-', '*', '/', '^', '\0'};
 	char *operators_list; // будем пользоваться данным указателем вместо строки src
 	// for no particular reason, разминки ради
 
@@ -631,6 +631,12 @@ void print_error(char **input_pt, struct Input input)
 
 	*input_pt = start;
 
+
+// printf("| | 1. tmp? %f\n", input.tmp);
+// printf("| | 3. new_num? %f\n", input.new_num);
+// printf("| | 5. opr? %c\n", input.opr);
+// printf("| | 6. type? %c\n", input.type);		
+
 	/* 3. Результат. */
 	// if (input.type == 'n')
 	// 	printf("Invalid input: \"%s\". Please enter operator.\n", input_str);
@@ -640,9 +646,14 @@ void print_error(char **input_pt, struct Input input)
 		printf("Invalid input: \"%s\". Please enter something meaningful.\n", input_str);
 
 	/* */
+	else if ((isnan(input.tmp) || isinf(input.tmp)) && type_is_root(input.type))
+		printf("Invalid input: \"%s\". Input's been withdrawn. You may enter operator to continue your calculations.\n", input_str);
+
 	else if (isnan(input.tmp) || isinf(input.tmp))
 		printf("Invalid input: \"%s\". Input's been withdrawn. Please enter different number to finish this\
 		expression or leave it behind by continuing your calculations.\n", input_str);
+
+
 
 	else // для input "4 r 1"; условие не помешало бы
 		printf("Invalid input: \"%s\". Please enter operator.\n", input_str);
@@ -663,31 +674,37 @@ void print_error(char **input_pt, struct Input input)
 */
 void print_subtotal(double subtotal, struct Input input)
 {
+	if ((isnan(input.tmp) || isinf(input.tmp)) && type_is_root(input.type))
+		printf("[%c%f] Invalid operation!\n", SQRT_ASCII, input.radicand);
 
-// printf("| | 1. tmp? %f\n", input.tmp);
-// printf("| | 2. subtotal? %f\n", subtotal);
-// printf("| | 3. new_num? %f\n", input.new_num);
-// printf("| | 5. opr? %c\n", input.opr);
-// printf("| | 6. type? %c\n", input.type);		
-
-	if (input.opr && (input.opr == 'r'))
+	else if (input.opr && (input.opr == 'r'))
 	{
 		// printf("[%c%f = %f]\n", SQRT_ASCII, subtotal, input.tmp);
 
 		printf("[%c%f = %f]\n", SQRT_ASCII, subtotal, input.tmp);
 	}
 
+
+
+
 	else if (isnan(input.tmp) || isinf(input.tmp))
 	{
 		if (input.opr)
 			printf("[%f %c %f] Invalid operation!\n", subtotal, input.opr, input.new_num);
 		else
+			// printf("Invalid operation! Please enter number.\n");
 			printf("Invalid operation!\n");
 	}
 
 	else if (input.opr)
 		printf("[%f %c %f = %f]\n", subtotal, input.opr, input.new_num, input.tmp);
 
+
+
+	if (!(isnan(input.tmp) || isinf(input.tmp)))
+		printf("Subtotal is: %f\n", input.tmp);
+	else
+		printf("Subtotal is: %f\n", subtotal);
 
 	// else if (isnan(input.tmp) || isinf(input.tmp))
 		// print_error(NULL, input);

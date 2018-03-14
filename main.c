@@ -75,7 +75,9 @@ int main(int argc, char *argv[])
 	char *input_pt; // input хранится в статической переменной
 	double subtotal = 0.0; // промежуточный итог и итоговый результат
 
-	double radicand = 0.0; // подкоренное выражение; для корректного вывода результата
+
+
+	int error_code = 0;
 
 	/* input - структура для данных об input. */
 	struct Input input;
@@ -87,6 +89,7 @@ int main(int argc, char *argv[])
 	input.new_num = 0.0; // последнее введенное число
 
 	input.tmp = 0.0; // "подменяет" subtotal
+	input.radicand = 0.0; // подкоренное выражение; для корректного вывода вычислений с участием корня
 
 	input.type = '\0'; // тип значения текущего input: 'n', 'o' или 'r'
 
@@ -123,16 +126,23 @@ int main(int argc, char *argv[])
 
 
 		/* 2. Обработка некорректного input. */
-		if ( !input.type ||
+		if ( 
+		/* Ветка срабатывает, если тип input неизвестен, т.е. '\0' */
+		!input.type ||
 
+		/* Или: если мат. операции проводятся с NaN или Infinity. */
 		( type_is_operator(input.type) && (isnan(input.tmp) || isinf(input.tmp) )) ||
 
-		( type_is_num(input.type) && last_input.was_root ) ||
+
+		/* Или: если был вверед оператор 'r', а потом сразу число. */
+		// ( type_is_num(input.type) && last_input.was_root ) ||
+		( type_is_num(input.type) && ((last_input.was_root) || input.opr == 'r') ) ||
+
 		( !type_is_num(input.type) && !(last_input.was_num || last_input.was_root) &&
 			!(type_is_operator(input.type) && last_input.was_operator) ))
-		/* Ветка срабатывает, если тип input неизвестен, т.е. '\0' */
-		/* Или: если мат. операции проводятся с NaN или Infinity. */
-		/* Или: если был вверед оператор 'r', а потом сразу число. */
+		
+		
+		
 		/* Или: если ввод начинается *не* с числа. */
 			/* Однако разрешается ввести другой оператор после ввода оператора. */
 		{
@@ -193,8 +203,8 @@ int main(int argc, char *argv[])
 			/* Только если subtotal уже "инициализирован". */
 			else
 			{
-				radicand = input.tmp;
-
+				input.radicand = input.tmp;
+				// input.tmp_backup = input.tmp;
 				if (input.opr)
 					input.tmp = do_math(subtotal, input);
 
@@ -215,7 +225,7 @@ int main(int argc, char *argv[])
 				print_subtotal(subtotal, input);
 
 			else if (type_is_root(input.type))
-				print_subtotal(radicand, input);
+				print_subtotal(input.radicand, input);
 		}
 
 		/* Если input имеет тип 'o'. */
