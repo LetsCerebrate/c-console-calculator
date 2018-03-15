@@ -10,99 +10,70 @@ Also, you can launch the program with ```h``` (which means "help") argument to r
 ```
 ./calc.exe h
 ```
-To do so, download directories ```bin``` and ```doc``` (and place them side by side), then you need to run the executable file from ```bin``` directory.
+To do so, download directories ```bin``` and ```doc``` (and place them side by side). Then you need to run the executable file from ```bin``` directory.
+Finally, you can check this program out right now, on [OnlineGDB](https://onlinegdb.com/rJKGU0PtG). Just follow the link and then click "Run" button at the top to compile and run it.
 
-## How to use
-Please note that each value you want to feed the program must be put on a separate line (in other words, hit Enter every time you put the value to console).
-<details>
-<summary>In this way</summary>
-<pre>
+## How to use. The basics.
+Please note that each value you want to feed the program, except the ```%``` symbol, must be put on a separate line (in other words, hit Enter every time you put the value to console), like that:
+```
 <b>Input:</b>
 6
 +
-50
-%
-r
+50%
+r // operator of square root extraction
 =
-</pre>
-<pre>
-<b>Output:</b>
+```
+```
+<b>Output (here and below, there's a brief version of output):</b>
 [6.000000 + 3.000000 = 9.000000]
 [&radic;9.000000 = 3.000000]
-Result is: 3.000000
-</pre>
-</details>
-If you'd like to close the program, you could just type <code>=</code>. It would show the result of calculations or, at least, the subtotal value, and then would be closed.
+```
+If you'd like to close the program, you could just type ```=``` or ```quit```. It would show the subtotal value and then would be closed.
 
-## Some important things to note. Examples of use.
-The program handles input in accordance with its inner system of types of values. There're a number of such types:
-* _number_ type means any valid number like ```1```, ```-0.25```, etc.
-* _operator_ type means binary operators of addition ```+```, subtraction ```-```, multiplication ```*```, division ```/```, and exponentiation ```^```. Example: ```5 ^ 2 = 25```.
-* _percent_ type means percentage ```%```. ```%``` gets the percentage of the given number. Example: ```1 + 50 % = 1.5```.
-* _root_ type means square root ```r```. Example: ```9 r = 3```.
-
-The program has some input restrictions according to these types. Here's a few examples. Say, you can't input several numbers or operators in a row. This won't be the cause of the crash or something, the program will just receive only the 1st value of the given type and will ignore the rest.
-<pre>
+## How to use. In more details.
+The values are needed to be placed on the separate lines. These values can be: 
+* any numbers including percentage like ```10%```;
+* binary operators (addition ```+```, subtraction ```-```, multiplication ```*```, division ```/```, exponentiation ```^```);
+* square root ```r``` (there's it's kinda a postfix operator here which returns the square root of the subtotal value).
+This calculator is able to save the subtotal, so if you've misspelled while entering a value, feel free to overwrite it. The following example reflects ```(3 + 1.5) * 2``` expression.
+```
 <b>Input:</b>
 3
-2
-1
-+
-10
-=
-</pre>
-<pre>
-<b>Output:</b>
-Invalid input: "2". Please enter operator.
-Invalid input: "1". Please enter operator.
-[3.000000 + 10.000000 = 13.000000]
-Result is: 13.000000
-</pre>
-</details>
-<details>
-<summary>The same is correct for operators, as well.</summary>
-<pre>
-<b>Input:</b>
-3
-+
 -
-10
++
+50
+50%
+*
+2
 =
-</pre>
-<pre>
+```
+```
 <b>Output:</b>
-Invalid input: "-". Please enter number.
-[3.000000 + 10.000000 = 13.000000]
-Result is: 13.000000
-</pre>
-</details>
-However, this rule doesn't spread on a unary square root:
-<pre>
-[&radic;81.000000 = 9.000000]
-[&radic;9.000000 = 3.000000]
-Result is: 3.000000
-</pre>
-Also, the program ignores meaningless input.
+[3.000000 + 50.000000 = 53.000000] // 3 + 50
+[3.000000 + 1.500000 = 4.500000] // oh, I meant not 50 but 50%
+[4.500000 * 2.000000 = 9.000000]
+```
+This feature also provides safety for calculations considering mathematically incorrect results.
+
 <details>
 <summary>Click to expand</summary>
 <pre>
 <b>Input:</b>
-something
-3
-something
-+
-1
+10
+/
+0
+2
 =
 </pre>
 <pre>
 <b>Output:</b>
-Invalid input: "something". Please enter something meaningful.
-Invalid input: "something". Please enter something meaningful.
-[3.000000 + 1.000000 = 4.000000]
-Result is: 4.000000
+[10.000000 / 0.000000] Invalid operation!
+Subtotal is: 10.000000
+Invalid input: "0". Input's been withdrawn. Please: 1) enter different number to finish this expression, or 2) enter operator to make different expression with subtotal shown above.
+[10.000000 / 2.000000 = 5.000000]
 </pre>
 </details>
-It's also worth to note that when you do exponentiation, the program checks if the exponent's correct, and then it can "fix" the incorrect exponent.
+The program also ignores input which's meaningless in the given context but this is not very exciting to see the examples of such a behavior. However, it's worth to note that when you perform exponentiation, the program checks if the exponent's correct, and it can fix the incorrect exponent:
 <details>
 <summary>Click to expand</summary>
 <pre>
@@ -116,26 +87,5 @@ It's also worth to note that when you do exponentiation, the program checks if t
 <b>Output:</b>
 Please note that exponent's been converted into 2.
 [3.000000 ^ 2 = 9.000000]
-Result is: 9.000000
-</pre>
-</details>
-Finally, in the case of an invalid operation, the program prints what it's been able to calculate, and then it closes itself.
-<details>
-<summary>Click to expand</summary>
-<pre>
-<b>Input:</b>
-2
-+
-50
-%
-/
-0
-+
-</pre>
-<pre>
-<b>Output:</b>
-[2.000000 + 1.000000 = 3.000000]
-[3.000000 / 0.000000] Invalid operation!
-Subtotal was before invalid operation occured: 3.000000
 </pre>
 </details>

@@ -1,19 +1,20 @@
-Please note that each value you want to feed the program must be put on a separate line (in other words, hit Enter every time you put the value to console).
+C Console Calculator
 
-The allowable operators are follows:
-'+' is addition operator: [5 + 2] = 7
-'-' is subtraction operator: [5 - 2] = 3
-'*' is multiplication operator: [5 * 2] = 10
-'/' is division operator: [5 / 2] = 2.5
-'^' is exponentiation operator: [5 ^ 2] = 25
-'%' is percentage operator: [1 + 50%] = 1.5
-'r' is square root operator: [25 r] = 5
-'=' is operator which returns result
+It's a simple calculator for a shell written for self-learning purposes.
 
-If you'd like to close the program, you could just type "=". It would show the result of calculations or, at least, the subtotal value, and then would be closed. 
 
-The program has some input restrictions according to the inner system of types of values. Say, you can't input several numbers or operators in a row. This won't be the cause of the crash or something, the program will just receive only the 1st value of the given type and will ignore the rest. However, this rule doesn't spread on a unary square root.
+How to use. The basics.
 
-The program ignores meaningless input. Also, when you do exponentiation, the program checks if the exponent's correct, and then it can "fix" the incorrect exponent. Finally, in the case of an invalid operation, the program prints what it's been able to calculate, and then it closes itself.
+Please note that each value you want to feed the program, except the "%" symbol, must be put on a separate line (in other words, hit Enter every time you put the value to console). If you'd like to close the program, you could just type "=" or "quit". It would show the subtotal value and then would be closed.
 
-See more details about the program in README.md file.
+
+How to use. In more details.
+
+The values are needed to be placed on the separate lines. These values can be: 
+- any numbers including percentage like "10%";
+- binary operators (addition "+", subtraction "-", multiplication "*", division "/", exponentiation "^");
+- square root "r" (there's it's kinda a postfix operator here which returns the square root of the subtotal value).
+
+This calculator is able to save the subtotal, so if you've misspelled while entering a value, feel free to overwrite it. This feature also provides safety for calculations considering mathematically incorrect results. 
+
+The program also ignores input which's meaningless in the given context but this is not very exciting to see the examples of such a behavior. However, it's worth to note that when you perform exponentiation, the program checks if the exponent's correct, and it can fix the incorrect exponent.
