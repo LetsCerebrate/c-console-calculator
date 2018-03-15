@@ -1,44 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
 /* Константы. */
 
 #define MAX_SIZE 20 // макс. длина обычного массива
-#define ZERO_ASCII 48 // индекс '0' в ASCII
-#define SQRT_ASCII 251 // индекс символа sqrt в ASCII
-
-/* Объекты. */
-
-/* Структура для хранения данных и состояний input. */
-
-struct Input
-{
-	char opr;
-	double new_num;
-	double old_num;
-	double radicand;
-
-	double tmp;
-
-	char type;
-
-	unsigned int has_percent : 1;
-	unsigned int has_point : 1;
-	unsigned int has_radical : 1;
-	unsigned int has_sign : 1;
-	unsigned int is_done : 1;
-	unsigned int is_initialized : 1;
-	unsigned int is_num : 1; // для identify_input
-	unsigned int is_operator : 1; // для identify_input
-	unsigned int is_percent : 1; // для identify_input
-	unsigned int is_root : 1; // для identify_input
-	unsigned int was_num : 1;
-	unsigned int was_operator : 1;
-	unsigned int was_percent : 1;
-	unsigned int was_root : 1;
-};
-
+#define ASCII_IND_ZERO 48 // индекс символа '0' в ASCII
+#define ASCII_IND_SQRT 251 // индекс символа sqrt в ASCII
 
 /* Функции "общего назначения". */
 
@@ -105,7 +69,17 @@ int is_point(char elem)
 }
 
 
+/* 
+	int is_percent(char elem);
 
+	Стек:
+		main / get_num / is_percent
+		main / identify_input / check_if_is_number / is_percent
+
+	Функция is_percent.
+		Если (char elem) - символ '%', возвращает 1. 
+		В противном случае возвращает 0. 
+*/
 int is_percent(char elem)
 {
 	if (elem == '%')
@@ -114,6 +88,14 @@ int is_percent(char elem)
 		return 0;
 }
 
+
+/* 
+	double is_bad_num(double num);
+
+	Функция is_bad_num.
+		Если число является NaN или Infinity, возвращает 1.
+		В противном случае возвращает 0. 
+*/
 int is_bad_num(double num)
 {
 	if (isnan(num) || isinf(num))
@@ -128,6 +110,8 @@ int is_bad_num(double num)
 
 	Стек:
 		main / get_num / alter_num_sign
+		main / do_math / get_correct_exp / alter_num_sign
+		main / print_subtotal / alter_num_sign
 
 	Функция alter_num_sign.
 		Принимает (double num) и возвращает данное число с противоположным знаком.

@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <ctype.h>
 #include "include/general.h"
 #include "include/input.h"
@@ -57,7 +58,6 @@ void print_subtotal(double subtotal, struct Input input);
 double reset_new_num(struct Input input);
 int type_is_operator(char input_type);
 int type_is_num(char input_type);
-int type_is_percent(char input_type);
 int type_is_root(char input_type);
 
 /* Main. */
@@ -75,31 +75,26 @@ int main(int argc, char *argv[])
 	char *input_pt; // input хранится в статической переменной
 	double subtotal = 0.0; // промежуточный итог и итоговый результат
 
-
 	/* input - структура для данных об input. */
 	struct Input input;
-
-	input.is_done = 0; // введено ли '='
-	input.is_initialized = 0; // присвоено ли переменной subtotal первое число, введенное пользователем
-
+	input.type = '\0'; // тип значения текущего input: 'n', 'o' или 'r'
 	input.opr = '\0'; // текущий введенный оператор
 	input.new_num = 0.0; // последнее введенное число
-
-	input.tmp = 0.0; // "подменяет" subtotal
+	input.tmp = 0.0; // "временный" subtotal, актуален в рамках одного выражения
 	input.radicand = 0.0; // подкоренное выражение; для корректного вывода вычислений с участием корня
 
-	input.type = '\0'; // тип значения текущего input: 'n', 'o' или 'r'
+
 
 	/* last_input - структура для состояний о последнем input. */
 	/* Необходима для обработки некорректного input. */
 	struct Input last_input;
-	last_input.was_num = 0;
-	last_input.was_operator = 0;
-	last_input.was_root = 0;
+	last_input.is_num = 0;
+	last_input.is_operator = 0;
+	last_input.is_root = 0;
 
 	/* Introduction. */
 	printf("Please enter what you want to calculate. Enter \"=\" to get subtotal and quit. If you wish to see\
-	brief help section, you may launch program with \"h\" argument, like so: \"./calc h\".\n\n");
+	brief help section, you may launch program with \"h\" argument, like so: \"./calc h\".\n***\n");
 
 	/* 2. Основная часть. */
 	while (1) // цикл прервется, если будет введено '='
@@ -111,8 +106,9 @@ int main(int argc, char *argv[])
 
 		/* Знак '=' необходимо обработать особо. */
 		/* Если введен '=', при проверке input.is_done программа будет завершена. */
-		if (type_is_operator(input.type) && (get_operator(&input_pt) == '='))
-			input.is_done = 1;
+		// if (type_is_operator(input.type) && (get_operator(&input_pt) == '='))
+		// 	input.is_done = 1;
+
 
 
 // printf("| | 1. tmp? %f\n", input.tmp);
@@ -135,11 +131,11 @@ int main(int argc, char *argv[])
 
 		/* Или: если ввод начинается *не* с числа. */
 		/* Однако разрешается ввести другой оператор после ввода оператора. */
-		( !type_is_num(input.type) && !(last_input.was_num || last_input.was_root) &&
-			!(type_is_operator(input.type) && last_input.was_operator) ))
+		( !type_is_num(input.type) && !(last_input.is_num || last_input.is_root) &&
+			!(type_is_operator(input.type) && last_input.is_operator) ))
 		{
 			/* Был ли запрос на выход? Если да, прервать цикл. */
-			if (input.is_done)
+			if (type_is_quit_query(input.type))
 				break;
 
 			print_error(&input_pt, input);
@@ -196,7 +192,7 @@ int main(int argc, char *argv[])
 			else
 			{
 				input.radicand = input.tmp;
-				// input.tmp_backup = input.tmp;
+				
 				if (input.opr)
 					input.tmp = do_math(subtotal, input);
 
@@ -234,18 +230,18 @@ int main(int argc, char *argv[])
 		/* 2.2. Состояния, необходимые для идентификации некорректного input. */
 		/* Показывают, какого типа был предыдущий input. */
 
-		last_input.was_operator = type_is_operator(input.type);
-		last_input.was_num = type_is_num(input.type);
-		last_input.was_root = type_is_root(input.type);
+		last_input.is_operator = type_is_operator(input.type);
+		last_input.is_num = type_is_num(input.type);
+		last_input.is_root = type_is_root(input.type);
 
 
 		/* Был ли запрос на выход? Если да, прервать цикл. */
-		if (input.is_done)
+		if (type_is_quit_query(input.type))
 			break;
 	}
 
 	/* 6. Вывести итоговый результат. */
-	printf("Result is: %f\n", subtotal);
+	printf("***\nResult is: %f\n", input.tmp);
 
 	return 0;
 }
@@ -254,5 +250,5 @@ int main(int argc, char *argv[])
 // printf("| | 1. tmp? %f\n", input.tmp);
 // printf("| | 2. subtotal? %f\n", subtotal);
 // printf("| | 3. new_num? %f\n", input.new_num);
-// printf("| | 5. opr? %c\n", input.opr);
-// printf("| | 6. type? %c\n", input.type);	
+// printf("| | 4. opr? %c\n", input.opr);
+// printf("| | 5. type? %c\n", input.type);	

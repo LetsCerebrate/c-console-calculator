@@ -1,6 +1,24 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+/* Объекты. */
+
+/* Структура для хранения данных и состояний input. */
+struct Input
+{
+	char opr;
+	char type;
+	double new_num;
+	double radicand;
+	double tmp;
+	unsigned int has_percent : 1;
+	unsigned int has_point : 1;
+	unsigned int has_radical : 1;
+	unsigned int has_sign : 1;
+	unsigned int is_initialized : 1;
+	unsigned int is_quit_query : 1;
+	unsigned int is_num : 1;
+	unsigned int is_operator : 1;
+	unsigned int is_root : 1;
+};
+
 
 /* Функции для работы с input. */
 
@@ -26,6 +44,25 @@ int type_is_num(char input_type)
 
 
 /* 
+	int type_is_quit_query(char input_type);
+
+	Стек:
+		main / type_is_quit_query
+
+	Функция type_is_quit_query.
+		Если (char input_type) - символ 'o', возвращает 1.
+		В противном случае возвращает 0.
+*/
+int type_is_quit_query(char input_type)
+{
+	if (input_type == 'x')
+		return 1;
+	else
+		return 0;
+}
+
+
+/* 
 	int type_is_operator(char input_type);
 
 	Стек:
@@ -38,25 +75,6 @@ int type_is_num(char input_type)
 int type_is_operator(char input_type)
 {
 	if (input_type == 'o')
-		return 1;
-	else
-		return 0;
-}
-
-
-/* 	
-	int type_is_percent(char input_type);
-
-	Стек:
-		main / type_is_percent
-
-	Функция type_is_percent.
-		Если (char input_type) - символ 'p', возвращает 1.
-		В противном случае возвращает 0.
-*/
-int type_is_percent(char input_type)
-{
-	if (input_type == 'p')
 		return 1;
 	else
 		return 0;
@@ -121,7 +139,7 @@ int get_correct_exp(double exp)
 		result = alter_num_sign(exp);
 
 	if ((double) result != exp)
-		printf("Please note that exponent's been converted into %d.\n", result);
+		printf("  Please note that exponent's been converted into %d.\n", result);
 
 	return result;
 }
@@ -280,7 +298,7 @@ double get_num(char **input_pt, double subtotal)
 			continue;
 		}
 
-		tmp = (double) (elem - (double) ZERO_ASCII) / multiplier;
+		tmp = (double) (elem - (double) ASCII_IND_ZERO) / multiplier;
 		result += tmp;
 
 		/* Если есть точка (т.е. input - десятичная дробь). */
@@ -305,11 +323,64 @@ double get_num(char **input_pt, double subtotal)
 
 	/* 4. Результат. */
 	if (input.has_percent)
+	{
+		if (!subtotal)
+			printf("  Please note that percantage of nothing is 0.");
+
 		return get_percentage(subtotal, result);
+	}
 
 	else
 		return result;
 }
+
+/* 
+	int input_is_quit_query(char ***input_pt);
+
+	Стек:
+		main / identify_input / input_is_quit_query
+
+	Функция input_is_quit_query.
+		Если (char ***input_pt) указывает на строку вида "=" или "quit", возвращает 1. 
+		В противном случае возвращает 0. 
+*/
+int input_is_quit_query(char ***input_pt)
+{
+	char input_str[MAX_SIZE];
+	char sample_str[] = "quit";
+
+	char count;
+
+	/* Если строка имеет вид: {'=', '\0'} */
+	if (***input_pt == '=' && !(*((**input_pt) + 1))) // такой синтаксис не смещает pt, в отличие от ++/--
+		return 1;
+
+	/* Если строка - это фраза "quit". */
+	else if (***input_pt == 'q') // если начинается не с 'q', то дальше и проверять не стоит
+	{
+		char *start = **input_pt;
+		count = 0;
+	
+		while (***input_pt != '\0')
+		{
+			input_str[count] = ***input_pt;
+	
+			count++;
+			(**input_pt)++;
+		}
+
+		input_str[count] = '\0';
+		**input_pt = start;
+
+		if (!strcmp(input_str, sample_str)) // если строки input и sample идентичны
+			return 1;
+		else
+			return 0;
+	}
+
+	else
+		return 0;
+}	
 
 
 /* 
@@ -331,12 +402,14 @@ int input_is_number(char ***input_pt)
 	struct Input input;
 	input.has_percent = 0;
 	input.has_point = 0;
-	// input.has_radical = 0;
 
 	char elem = '\0'; // псевдоним для ***input_pt внутри цикла
 
 	/* 2. Перебор input. */
 	register char *start = **input_pt;
+
+	if (is_percent(***input_pt))
+		return 0; // число не может начинаться с символа '%'
 
 	if (is_sign(***input_pt))
 		(**input_pt)++; // если есть знак, перешагнуть его - пока никак не обрабатывать
@@ -446,34 +519,6 @@ int input_is_operator(char ***input_pt)
 
 
 /* 
-	int input_is_percent(char ***input_pt);
-
-	Стек:
-		main / identify_input / input_is_percent
-
-	Функция input_is_percent.
-		Если (char ***input_pt) - процент '%', возвращает 1. 
-		В противном случае возвращает 0. 
-*/
-int input_is_percent(char ***input_pt)
-{
-	// char *start = **input_pt;
-
-	// if ( (***input_pt == '%') && ( *((**input_pt) + 1) == '\0' ) )
-	// {
-	// 	**input_pt = start;
-	// 	return 1;
-	// }
-
-	// **input_pt = start;
-	// return 0;
-
-
-
-}
-
-
-/* 
 	int input_is_root(char ***input_pt);
 
 	Стек:
@@ -513,20 +558,19 @@ int input_is_root(char ***input_pt)
 */
 char identify_input(char **input_pt, double subtotal, struct Input input)
 {
-	/* 1. Объекты. */
-	/* Состояния. */
+	/* 1. Объекты. Состояния. */
 	struct Input input_state;
+	input_state.is_quit_query = 0;
 	input_state.is_num = 0;
 	input_state.is_operator = 0;
-	// input_state.is_percent = 0;
 	input_state.is_root = 0;
 
-	/* 2. Результат. Определение типа input ('n', 'o', 'p' или 'r'). */
-	if (input_state.is_root = input_is_root(&input_pt))
-		return 'r';
+	/* 2. Результат. Определение типа input ('x', 'n', 'o' или 'r'). */
+	if (input_state.is_quit_query = input_is_quit_query(&input_pt))
+		return 'x';
 
-	// else if (input_state.is_percent = input_is_percent(&input_pt))
-	// 	return 'p';
+	else if (input_state.is_root = input_is_root(&input_pt))
+		return 'r';
 
 	else if (input_state.is_operator = input_is_operator(&input_pt))
 		return 'o';
@@ -535,7 +579,10 @@ char identify_input(char **input_pt, double subtotal, struct Input input)
 		return 'n';
 		
 	/* Если input некорректный (не соотв. ни одному типу). */
-	else if ( (!input_state.is_root && !input_state.is_operator && !input_state.is_num/*&& !input_state.is_percent*/) )
+	else if ( (!input_state.is_quit_query && 
+		!input_state.is_root && 
+			!input_state.is_operator && 
+				!input_state.is_num) )
 		return '\0';
 }
 
@@ -658,12 +705,16 @@ void print_error(char **input_pt, struct Input input)
 		main / print_subtotal
 
 	Функция print_subtotal.
-		Выводит результаты вычислений.
+		Выводит результаты вычислений, а также выражения.
 */
 void print_subtotal(double subtotal, struct Input input)
 {
 	/* 1. Объекты. */
 	int exp_tmp = 0; // показатель степени
+
+	/* Если всюду нули, то и показывать нечего. */
+	if (subtotal == 0 && input.tmp == 0 && input.new_num == 0)
+		return;
 
 	/* 2. Отдельный вывод промежуточного итога. */
 	if (!is_bad_num(input.tmp))
@@ -677,7 +728,7 @@ void print_subtotal(double subtotal, struct Input input)
 	{
 		/* Попытка извлечь корень из отриц. числа. */
 		if (type_is_root(input.type))
-			printf("  [%c%f] Invalid operation!\n", SQRT_ASCII, input.radicand);
+			printf("  [%c%f] Invalid operation!\n", ASCII_IND_SQRT, input.radicand);
 
 		/* Остальное (деление на 0, в частности). */
 		else
@@ -694,7 +745,7 @@ void print_subtotal(double subtotal, struct Input input)
 	{
 		/* Корень. */
 		if (input.opr == 'r')
-			printf("  [%c%f = %f]\n", SQRT_ASCII, subtotal, input.tmp);
+			printf("  [%c%f = %f]\n", ASCII_IND_SQRT, subtotal, input.tmp);
 
 		/* Возведение в степень. */
 		/* Приводит показатель степени к удобоваримому виду: -3.75 -> 3 */
