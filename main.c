@@ -76,8 +76,7 @@ int main(int argc, char *argv[])
   last_input.is_root = 0;
 
   /* Introduction. */
-  printf("Please enter what you want to calculate. Enter \"=\" to get subtotal and quit. If you wish to see\
-  brief help section, you may launch program with \"h\" argument, like so: \"./calc h\".\n***\n");
+  printf("Welcome to C Console Calculator! Please enter what you want to calculate. Type \"=\" or \"quit\" to get subtotal and quit. If you wish to see brief Help, you may launch program with \"h\" argument, like so: \"./calc h\".\n***\n");
 
   /* 2. Основная часть. */
   while (1)
