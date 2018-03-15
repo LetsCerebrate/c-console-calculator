@@ -11,6 +11,7 @@ Also, you can launch the program with ```h``` (which means "help") argument to r
 ./calc.exe h
 ```
 To do so, download directories ```bin``` and ```doc``` (and place them side by side). Then you need to run the executable file from ```bin``` directory.
+Finally, you can check this program out right now, on [OnlineGDB](https://onlinegdb.com/rJKGU0PtG).
 
 ## How to use. The basics.
 Please note that each value you want to feed the program, except the ```%``` symbol, must be put on a separate line (in other words, hit Enter every time you put the value to console), like that:
