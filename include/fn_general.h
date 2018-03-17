@@ -202,11 +202,11 @@ void fill_list_pt(char **pt, char *str)
 */
 double pow(double num, double exp)
 {
-  if (exp == 1)
+  if (exp <= 1.0)
     return num;
 
   else
-    return num * pow(num, exp - 1);
+    return num * pow(num, exp - 1.0);
 }
 
 

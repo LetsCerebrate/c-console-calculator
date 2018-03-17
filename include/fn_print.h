@@ -121,7 +121,7 @@ void print_error(char **input_pt, struct Input input)
 void print_subtotal(double subtotal, struct Input input)
 {
   /* 1. Объекты. */
-  int exp_tmp = 0; // показатель степени
+  int exp_tmp = 0; // показатель степени для операции '^'
 
   /* Если всюду нули, то и показывать нечего. */
   if (subtotal == 0 && input.tmp == 0 && input.new_num == 0)
@@ -159,13 +159,9 @@ void print_subtotal(double subtotal, struct Input input)
       printf("  [%c%f = %f]\n", ASCII_IND_SQRT, subtotal, input.tmp);
 
     /* Операция возведение в степень. */
-    /* Приводит показатель степени к удобоваримому виду: -3.75 -> 3 */
     else if (input.opr == '^')
     {
-      exp_tmp = input.new_num;
-      if (exp_tmp < 0)
-        exp_tmp = (int) alter_num_sign((double) exp_tmp);
-
+      exp_tmp = input.new_num; // 3.75 -> 3
       printf("  [%f %c %d = %f]\n", subtotal, input.opr, exp_tmp, input.tmp);
     }
 

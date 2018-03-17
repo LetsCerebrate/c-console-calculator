@@ -94,32 +94,6 @@ char * query_input()
 }
 
 
-/* 
-  int get_correct_exp(double exp);
-
-  Стек:
-    main / do_math / get_correct_exp
-
-  Функция get_correct_exp.
-    Принимает число (показатель степени), приводит его к нужному виду, если он не соответствовал требованиям
-    (при этом возвещает об этом).
-    Возвращает измененный, корректный показатель степени.
-    Пример: -2.75 -> 2
-*/
-int get_correct_exp(double exp)
-{
-  int result = exp; // int значит, что дробная часть double будет отброшена автоматически
-
-  if (exp < 0)
-    result = alter_num_sign(exp);
-
-  if ((double) result != exp)
-    printf("  Please note that exponent's been converted into %d.\n", result);
-
-  return result;
-}
-
-
 /*
   double do_math(double subtotal, struct Input input);
 
@@ -131,7 +105,10 @@ int get_correct_exp(double exp)
 */
 double do_math(double subtotal, struct Input input)
 {
-  /* 1. Вычисления. */
+  /* 1. Объекты. */
+  int exp_tmp = 0; // для case '^'
+
+  /* 2. Вычисления. */
   switch (input.opr)
   {
     case '+':
@@ -147,21 +124,25 @@ double do_math(double subtotal, struct Input input)
       return subtotal / input.new_num;
 
     case '^':
-      /* 0 в степени 0 пусть будет... 0 (хотя, в сущности, это некорректная операция). */
-      /* Занятно, что калькулятор Windows 10 (версии 1709, сборки 16299.248) в инженерном режиме возвращает 
-      в таком случае 1. */
-      if (!input.new_num && !subtotal)
-        return 0.0;
+      /* Конвертировать показатель степени в целое число. */
+      /* И если принятый показатель отличается от преобразованного, предупредить об этом. */
+      exp_tmp = input.new_num;
+      if ((double) exp_tmp != input.new_num)
+        printf("  Please note that exponent's been converted to %d.\n", exp_tmp);
 
-      /* num (если num != 0) в степени 0 равно 1. */
-      else if (!input.new_num)
+      /* Число в степени 0 равно 1. */
+      /* 0 в степени 0 - это, по сути, неопределенность, но по примеру того же стандартного калькулятора Windows
+      0 в степени 0 сделаем 1. */
+      if (!input.new_num)
         return 1.0;
 
+      /* Если показатель степени - отриц. число, воспользоваться формулой (a / b) ^ -n == (b / a) ^ n
+      Число a нашем случае можно автоматом принять за 1. */
+      else if (input.new_num < 0)
+        return 1 / (pow(subtotal, alter_num_sign(exp_tmp)));
+
       else
-      {
-        input.new_num = get_correct_exp(input.new_num); // "подкорректировать" показатель степени
-        return pow(subtotal, input.new_num);
-      }
+        return pow(subtotal, exp_tmp);
 
     case 'r':
       return sqrt(input.tmp);
