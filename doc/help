@@ -17,4 +17,4 @@ The values are needed to be placed on the separate lines. These values can be:
 
 This calculator is able to save the subtotal, so if you've misspelled while entering a value, feel free to overwrite it. This feature also provides safety for calculations considering mathematically incorrect results. 
 
-The program also ignores input which's meaningless in the given context but this is not very exciting to see the examples of such a behavior. However, it's worth to note that when you perform exponentiation, the program checks if the exponent's correct, and it can fix the incorrect exponent.
+The program also ignores input which's meaningless in the given context.

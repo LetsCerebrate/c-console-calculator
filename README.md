@@ -2,19 +2,19 @@
 It's a simple calculator for a shell written for self-learning purposes.
 
 ## How to run
-You can just download the binary file called ```calc.exe``` and launch it via your shell (say, Bash):
+You can immediately check this program out by visiting [OnlineGDB](https://onlinegdb.com/rJKGU0PtG). Simply follow the link and then click "Run" button at the top to make the service to compile and run the program.
+
+If you prefer to deal with binaries directly, you may download the file called ```calc.exe``` and launch it via your favourite shell (say, Bash):
 ```
 ./calc.exe
 ```
-Also, you can launch the program with ```h``` (which means "help") argument to read a manual (which is a brief version of this README.md file, actually), like so:
+It's also worth to note that you can launch the program with ```h``` (which means "help") argument to read a manual (which is a brief version of this README.md file, actually), like so:
 ```
 ./calc.exe h
 ```
-To do so, download directories ```bin``` and ```doc``` (and place them side by side). Then you need to run the executable file from ```bin``` directory. 
+To do so, download directories ```bin``` and ```doc``` and place them side by side. Then you'll need to run the executable file from ```bin``` directory.
 
-Finally, you can check this program out right now, on [OnlineGDB](https://onlinegdb.com/rJKGU0PtG). Just follow the link and then click "Run" button at the top to compile and run it.
-
-## How to use. The basics.
+## How to use. The basics
 Please note that each value you want to feed the program, except the ```%``` symbol, must be put on a separate line (in other words, hit Enter every time you put the value to console), like that:
 <pre>
 <b>Input:</b>
@@ -29,15 +29,15 @@ r
 [6.000000 + 3.000000 = 9.000000]
 [&radic;9.000000 = 3.000000]
 </pre>
-If you'd like to close the program, you could just type <code>=</code> or <code>quit</code>. It would show the subtotal value and then would be closed.
+If you'd like to close the program, you could just type <code>=</code> or <code>quit</code>. It would show the subtotal value and then be closed.
 
-## How to use. In more details.
+## How to use. In more details
 The values are needed to be placed on the separate lines. These values can be: 
 * *any numbers* including *percentage* like ```10%```;
 * *binary operators* (addition ```+```, subtraction ```-```, multiplication ```*```, division ```/```, exponentiation ```^```);
 * *square root* ```r``` (there's it's kinda a postfix operator here which returns the square root of the subtotal value).
 
-This calculator is able to save the subtotal, so if you've misspelled while entering a value, feel free to overwrite it. The following example reflects ```(3 + 1.5) * 2``` expression.
+This calculator is able to save the subtotal, so if you've misspelled while entering a value, feel free to overwrite it. The following example reflects ```(3 + 1.5) * 2``` expression:
 <pre>
 <b>Input:</b>
 3
@@ -75,19 +75,4 @@ Invalid input: "0". Input's been withdrawn. Please: 1) enter different number to
 </pre>
 </details>
 
-The program also ignores input which's meaningless in the given context but this is not very exciting to see the examples of such a behavior. However, it's worth to note that when you perform exponentiation, the program checks if the exponent's correct, and it can fix the incorrect exponent.
-<details>
-<summary>Example of exponent's correction</summary>
-<pre>
-<b>Input:</b>
-3
-^
--2.75
-=
-</pre>
-<pre>
-<b>Output:</b>
-Please note that exponent's been converted into 2.
-[3.000000 ^ 2 = 9.000000]
-</pre>
-</details>
+The program also ignores input which's meaningless in the given context but this is not very exciting to see the examples of such a behavior.
