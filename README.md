@@ -2,7 +2,7 @@
 It's a simple calculator for a shell written for self-learning purposes.
 
 ## How to run
-You can immediately check this program out by visiting [OnlineGDB](https://onlinegdb.com/rJKGU0PtG). Simply follow the link and then click "Run" button at the top to make the service to compile and run the program.
+You can immediately check this program out by visiting [OnlineGDB](https://onlinegdb.com/Syykdr5Yf). Simply follow the link and then click "Run" button at the top to make the service to compile and run the program.
 
 If you prefer to deal with binaries directly, you may download the file called ```calc.exe``` and launch it via your favourite shell (say, Bash):
 ```
