@@ -38,7 +38,8 @@ void print_help()
 
   /* 2.2. Файла нет? */
   else
-    printf("The needed file \"%s\" hasn't been found! You may read README.md file to get the necessary information.\n", 
+    printf("The needed file \"%s\" hasn't been found! You may read README.md file to get "
+    "the necessary information.\n", 
     filename);
 
   return;
@@ -81,12 +82,12 @@ void print_error(char **input_pt, struct Input input)
   if (is_bad_num(input.tmp))
   {
     if (type_is_root(input.type))
-      printf("  Invalid input: \"%s\". Input's been withdrawn. You may enter operator to continue your calculations with subtotal shown above.\n", 
-      input_str);
+      printf("  Invalid input: \"%s\". Input's been withdrawn. You may enter operator to continue "
+      "your calculations with subtotal shown above.\n", input_str);
 
     else
-      printf("  Invalid input: \"%s\". Input's been withdrawn. Please: 1) enter different number to finish this expression, or 2) enter operator to make different expression with subtotal shown above.\n", 
-      input_str);
+      printf("  Invalid input: \"%s\". Input's been withdrawn. Please: 1) enter different number to finish "
+      "this expression, or 2) enter operator to make different expression with subtotal shown above.\n", input_str);
   }
 
   /* 3.2. Если ввод начинается с оператора или символа 'r'. */
@@ -127,14 +128,8 @@ void print_subtotal(double subtotal, struct Input input)
   if (subtotal == 0 && input.tmp == 0 && input.new_num == 0)
     return;
 
-  /* 2. Отдельный вывод промежуточного итога. */
-  if (!is_bad_num(input.tmp))
-    printf("  Subtotal is: %f\n", input.tmp);
-  else
-    printf("  Subtotal is: %f\n", subtotal);
-
-  /* 3. Вывод на экран введенных выражений. */
-  /* 3.1. Вывод выражений, приведших к NaN или Infinity. */
+  /* 2. Вывод на экран введенных выражений. */
+  /* 2.1. Вывод выражений, приведших к NaN или Infinity. */
   if (is_bad_num(input.tmp))
   {
     /* Попытка извлечь корень из отриц. числа. */
@@ -151,7 +146,7 @@ void print_subtotal(double subtotal, struct Input input)
     }
   }
 
-  /* 3.2. Вывод выражений с указанным оператором. */
+  /* 2.2. Вывод выражений с указанным оператором. */
   else if (input.opr)
   {
     /* Операции с квадратным корнем. */
@@ -169,6 +164,12 @@ void print_subtotal(double subtotal, struct Input input)
     else
       printf("  [%f %c %f = %f]\n", subtotal, input.opr, input.new_num, input.tmp);
   }
+
+  /* 3. Отдельный вывод промежуточного итога. */
+  if (!is_bad_num(input.tmp))
+    printf("  Subtotal is: %f\n", input.tmp);
+  else
+    printf("  Subtotal is: %f\n", subtotal);
 
   return;
 }
