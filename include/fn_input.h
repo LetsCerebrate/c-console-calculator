@@ -137,7 +137,7 @@ double do_math(double subtotal, struct Input input)
         return 1.0;
 
       /* Если показатель степени - отриц. число, воспользоваться формулой (a / b) ^ -n == (b / a) ^ n
-      Число a нашем случае можно автоматом принять за 1. */
+      Число b нашем случае можно автоматом принять за 1. */
       else if (input.new_num < 0)
         return 1 / (pow(subtotal, alter_num_sign(exp_tmp)));
 

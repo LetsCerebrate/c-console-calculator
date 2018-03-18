@@ -1,6 +1,6 @@
 /*
   Простой калькулятор для оболочки.
-  By Goatish Priest, 2018. All right reversed.
+  By Goatish Priest, 2018. All rights reversed.
 
   Порядок работы цикла программы.
 

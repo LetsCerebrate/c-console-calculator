@@ -125,7 +125,7 @@ void print_subtotal(double subtotal, struct Input input)
   int exp_tmp = 0; // показатель степени для операции '^'
 
   /* Если всюду нули, то и показывать нечего. */
-  if (subtotal == 0 && input.tmp == 0 && input.new_num == 0)
+  if (!subtotal && !input.tmp && !input.new_num)
     return;
 
   /* 2. Вывод на экран введенных выражений. */
