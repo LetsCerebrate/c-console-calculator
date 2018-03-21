@@ -1,5 +1,21 @@
 /* Функции для вывода данных. */
 
+void print_all_memcells(struct Memory *memory)
+{
+  register int i;
+
+  for (i = 0; i < MAX_SIZE; i++)
+  {
+    if (memory -> cells[i])
+      printf("  Memory cell #%d has: %f\n", i + 1, memory -> cells[i]);
+  }
+
+  return;
+}
+
+
+
+
 /* 
   void print_help();
 
@@ -26,7 +42,7 @@ void print_help()
 
   if (fp)
   {
-    /* Левая часть условия для того, чтобы не получить segmentation fault, если букв в файле многовато. */
+    /* Левая часть условия для того, чтобы не схватить segmentation fault, если букв в файле многовато. */
     while ( (count < sizeof(buff)) && (buff[count] = fgetc(fp)) != EOF )
       count++;
 
@@ -55,7 +71,7 @@ void print_help()
   Функция print_error.
     Выводит сообщение о некорректном input.
 */
-void print_error(char **input_pt, struct Input input)
+void print_error(char **input_pt, struct Input input, struct Memory memory)
 {
   /* 1. Объекты. */
   char input_str[MAX_SIZE];
@@ -102,7 +118,11 @@ void print_error(char **input_pt, struct Input input)
   else if (type_is_num && input.opr == 'r')
     printf("  Invalid input: \"%s\". Please enter operator.\n", input_str);
 
-  /* Гипотетические сценарии. */
+  /* Работа с памятью калькулятора. Попытка получить доступ к элементу массива за границами последнего. */
+  else if (memory.index >= MAX_SIZE + 1)
+    printf("  There's no such cell. Overall number of available cells is %d.\n", MAX_SIZE);
+    
+  /* Остальное. */
   else
     printf("  Invalid input: \"%s\".\n", input_str);
 
@@ -119,13 +139,14 @@ void print_error(char **input_pt, struct Input input)
   Функция print_subtotal.
     Выводит результаты вычислений, а также выражения, которые привели к означенным результатам.
 */
-void print_subtotal(double subtotal, struct Input input)
+void print_subtotal(double subtotal, struct Input input, struct Memory memory)
 {
   /* 1. Объекты. */
   int exp_tmp = 0; // показатель степени для операции '^'
 
   /* Если всюду нули, то и показывать нечего. */
-  if (!subtotal && !input.tmp && !input.new_num)
+  /* Однако это не распространяется на команду "c" (clear). */
+  if (!subtotal && !input.tmp && !input.new_num && !input.keyword_code == 2)
     return;
 
   /* 2. Вывод на экран введенных выражений. */
@@ -165,11 +186,27 @@ void print_subtotal(double subtotal, struct Input input)
       printf("  [%f %c %f = %f]\n", subtotal, input.opr, input.new_num, input.tmp);
   }
 
-  /* 3. Отдельный вывод промежуточного итога. */
-  if (!is_bad_num(input.tmp))
-    printf("  Subtotal is: %f\n", input.tmp);
+  /* 3. Отдельный вывод промежуточного итога и значения в 1-й ячейке памяти, если таковое отлично от 0. */
+  else if (memory.cells[0])
+  {
+    if (!is_bad_num(input.tmp))
+      printf("  Memory cell #1 has: %f / Subtotal is: %f\n", memory.cells[0], input.tmp);
+    else
+      printf("  Memory cell #1 has: %f / Subtotal is: %f\n", memory.cells[0], subtotal);
+  }
   else
-    printf("  Subtotal is: %f\n", subtotal);
+  {
+    if (!is_bad_num(input.tmp))
+      printf("  Subtotal is: %f\n", input.tmp);
+    else
+      printf("  Subtotal is: %f\n", subtotal);
+  }
+
+
+  // if (!is_bad_num(input.tmp))
+  //   printf("  Subtotal is: %f\n", input.tmp);
+  // else
+  //   printf("  Subtotal is: %f\n", subtotal);
 
   return;
 }

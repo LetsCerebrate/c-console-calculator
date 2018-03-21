@@ -1,5 +1,62 @@
 /* Функции для работы с input. */
 
+
+int get_keyword_code(char **input_pt)
+{
+  int cell_ind = 0;
+  register int count;
+  char elem2 = *((*input_pt) + 1),
+    elem3 = *((*input_pt) + 2);
+  // char start = *input_pt;
+
+  // cell_ind <= MAX_SIZE
+
+  switch (**input_pt)
+  {
+    case '=':
+    case 'q':
+      return 1; // q|uit
+
+    case 'c':
+      return 2; // c|lear subtotal
+
+    case 'm': // m|+10
+      // if ( is_digit(elem3) // 3-й символ строки - цифра?
+        // cell_ind = (int) get_num( (*input_pt) + 2, NULL ); // если input - "m+10", передать указатель, смещенный к 10
+      if (elem2 == 'c' && elem3 == 'a')
+        return 3; // mca - clear all memory
+
+      else if (elem2 == 'p' && elem3 == 'a')
+        return 4; // mpa - print all memory
+
+      else if (elem2 == 'c')
+        return 5; // mc - memory clear
+
+      else if (elem2 == 'r')
+        return 6; // mr - memory recall
+
+      else if (elem2 == '+')
+        return 7; // m+
+
+      else if (elem2 == '-')
+        return 8; // m-
+  }
+}
+
+
+void reset_all_memcells(struct Memory *memory)
+{
+  register int i;
+
+  for (i = 0; i < MAX_SIZE; i++)
+    memory -> cells[i] = 0.0;
+
+  return;
+}
+
+
+
+
 /*   
   int type_is_num(char input_type);
 
@@ -20,18 +77,18 @@ int type_is_num(char input_type)
 
 
 /* 
-  int type_is_quit_query(char input_type);
+  int type_is_keyword(char input_type);
 
   Стек:
-    main / type_is_quit_query
+    main / type_is_keyword
 
-  Функция type_is_quit_query.
-    Если (char input_type) - символ 'x', возвращает 1.
+  Функция type_is_keyword.
+    Если (char input_type) - символ 'k', возвращает 1.
     В противном случае возвращает 0.
 */
-int type_is_quit_query(char input_type)
+int type_is_keyword(char input_type)
 {
-  if (input_type == 'x')
+  if (input_type == 'k')
     return 1;
   else
     return 0;
@@ -171,6 +228,7 @@ char get_operator(char **input_pt)
 
   Стек:
     main / get_num
+    main / get_keyword_code / get_num
 
   Функция get_num.
     (char **input_pt) уже считается числом.
@@ -250,57 +308,115 @@ double get_num(char **input_pt, double subtotal)
     return result;
 }
 
-/* 
-  int input_is_quit_query(char ***input_pt);
 
-  Стек:
-    main / identify_input / input_is_quit_query
-
-  Функция input_is_quit_query.
-    Если (char ***input_pt) указывает на строку вида "=" или "quit", возвращает 1. 
-    В противном случае возвращает 0. 
-*/
-int input_is_quit_query(char ***input_pt)
+int input_is_keyword(char ***input_pt)
 {
   /* 1. Объекты. */
-  char input_str[MAX_SIZE];
-  char sample_str[] = "quit";
+  char input_str[MAX_SIZE]; // "mc10"
+  char input_str_lpart[MAX_SIZE]; // подстрока input_str - часть с буквами
 
-  register char count;
+  struct Input state;
+  state.is_equal = 0;
 
-  /* 2. Перебор. */
+  /* Список ключевых слов. */
+  char *sample_strings[SAMPLE_ARR_SIZE];
+  sample_strings[0] = "=";
+  sample_strings[1] = "quit";
+  sample_strings[2] = "c";
+  sample_strings[3] = "mc";
+  sample_strings[4] = "mr";
+  sample_strings[5] = "m+";
+  sample_strings[6] = "m-";
+  sample_strings[7] = "mca";
+  sample_strings[8] = "mpa";
 
-  /* 2.1. Если строка имеет вид: {'=', '\0'} */
-  if (***input_pt == '=' && !(*((**input_pt) + 1))) // такой синтаксис не смещает pt, в отличие от ++/--
-    return 1;
+  char elem = ***input_pt;
+  char *start = **input_pt;
+  register int i,
+    j;
 
-  /* 2.2. Если строка - это фраза "quit". */
-  else if (***input_pt == 'q') // если начинается не с 'q', то дальше и проверять не стоит
+  /* 2. 1-я фаза проверки. */
+
+  /* 2.1. 1-й символ строки: '=', 'q', 'c' или 'm'? */
+  for (i = 0; i < SAMPLE_ARR_SIZE; i++)
+    if ( ( ***input_pt == sample_strings[i][0] ) &&
+      (state.is_equal = 1) ) {} // если нет, то дальше и проверять не стоит
+
+  if (!state.is_equal)
+    return 0;
+
+  /* 2.2. Получить строку input_str из текущего input'а для дальнейших испытаний. */
+  /* Дальше будем работать с данной строкой, а не с указателем. */
+  i = 0;
+
+  while ((elem = ***input_pt) != '\0')
   {
-    register char *start = **input_pt;
-    count = 0;
-  
-    while (***input_pt != '\0')
-    {
-      input_str[count] = ***input_pt;
-  
-      count++;
-      (**input_pt)++;
-    }
+    input_str[i] = elem;
 
-    input_str[count] = '\0';
-    **input_pt = start;
-
-    if (!strcmp(input_str, sample_str)) // если строки input и sample идентичны
-      return 1;
-    else
-      return 0;
+    (**input_pt)++;
+    i++;
   }
 
-  /* 2.3. Прочие случаи. */
-  else
+  input_str[i] = '\0';
+  **input_pt = start;
+  elem = ***input_pt;
+
+  /* 2.3. Если input - "=", "quit" или "c". */
+  if (elem != 'm')
+  {
+    state.is_equal = 0;
+
+    for (i = 0; i < SAMPLE_ARR_SIZE; i++)
+      if ( !strcmp(sample_strings[i], input_str) &&
+        (state.is_equal = 1) ) {}
+
+    if (!state.is_equal)
+      return 0;
+    else
+      return 1; // если input равен "=", "quit" или "c", все ok
+  }
+  /* 2.3. Если input - "mca" или "mpa". */
+  else if ( (!strcmp(input_str, sample_strings[7]) || !strcmp(input_str, sample_strings[8])) )
+    return 1;
+
+  /* 3. 2-я фаза проверки. */
+
+  /* 3.1. Идентичны ли sample_str и input_str (1-я половина)? */
+  /* Например, есть такой input: "mc10" (memory clear, применить к ячейке под индексом 10). */
+  state.is_equal = 0;
+
+  /* Получить первые 2 символа, т.е. взять подстроку "mc". */
+  for (i = 0; i < 2; i++)
+    input_str_lpart[i] = input_str[i];
+
+  input_str_lpart[i] = '\0';
+
+  /* Сравнить взятую выше подстроку с sample_str. */
+  for (j = 0; j < SAMPLE_ARR_SIZE; j++) // i следует приберечь для проверки остатка input_str
+    if ( !strcmp(input_str_lpart, sample_strings[j]) && (state.is_equal = 1) ) {}; 
+    // здесь "mc" идентично "mc", все правильно
+    
+  if (!state.is_equal)
     return 0;
-}  
+
+  /* 3.2. Проверка на корректность "индексной" части input_str, если таковая есть. */
+  state.is_equal = 0;
+
+  /* Присмотреться к 1-му символу. */
+  if ( input_str[i] && (!is_digit(input_str[i]) || input_str[i] == ASCII_IND_ZERO))
+  // input вида "mc0" или "mc0010" не допускается
+  // input вида "mc", т.е. {'m', 'c', '\0'}, допускается
+    return 0; 
+
+  i += 1;
+
+  /* Если "индексная" часть - целое число вроде "10" (как в нашем примере), ввод, наконец, признается ключевым словом. */
+  for (i; i < get_str_length(input_str); i++)
+    if (!is_digit(input_str[i]))
+      return 0;
+
+  return 1;
+}
 
 
 /* 
@@ -389,7 +505,7 @@ int input_is_number(char ***input_pt)
 int input_is_operator(char ***input_pt)
 {
   /* 1. Объекты. */
-  char operators_list_src[MAX_SIZE] = {'=', '+', '-', '*', '/', '^', '\0'};
+  char operators_list_src[MAX_SIZE] = {/*'=',*/ '+', '-', '*', '/', '^', '\0'};
   char *operators_list; // будем пользоваться данным указателем вместо строки src
   // for no particular reason, разминки ради
 
@@ -469,7 +585,7 @@ int input_is_root(char ***input_pt)
     main / identify_input
 
   Функция identify_input.
-    Если (char **input_pt) - "=" или "quit" возвращает 'x' (exit).
+    Если (char **input_pt) - ключевое слово, возвращает 'k' (keyword).
     Если (char **input_pt) - число, возвращает 'n' (number).
     Если (char **input_pt) - мат. оператор ('+', '*', ...), возвращает 'o' (operator).
     Если (char **input_pt) - корень (квадратный) 'r', возвращает 'r' (root).
@@ -479,14 +595,14 @@ char identify_input(char **input_pt, double subtotal, struct Input input)
 {
   /* 1. Объекты. Состояния. */
   struct Input input_state;
-  input_state.is_quit_query = 0;
+  input_state.is_keyword = 0;
   input_state.is_num = 0;
   input_state.is_operator = 0;
   input_state.is_root = 0;
 
   /* 2. Результат. Определение типа input ('x', 'n', 'o', 'r' или '\0'). */
-  if (input_state.is_quit_query = input_is_quit_query(&input_pt))
-    return 'x';
+  if (input_state.is_keyword = input_is_keyword(&input_pt))
+    return 'k';
 
   else if (input_state.is_root = input_is_root(&input_pt))
     return 'r';
@@ -498,7 +614,7 @@ char identify_input(char **input_pt, double subtotal, struct Input input)
     return 'n';
     
   /* Если input некорректный (не соотв. ни одному типу). */
-  else if ( (!input_state.is_quit_query && 
+  if ( (!input_state.is_keyword && 
     !input_state.is_root && 
       !input_state.is_operator && 
         !input_state.is_num) )
