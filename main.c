@@ -58,6 +58,9 @@ int main(int argc, char *argv[])
     *shifted_input_pt = NULL;
   double subtotal = 0.0; // промежуточный итог и итоговый результат
 
+  int error_code = 0,
+    query_print_code = 0;
+
   /* input - данные об input. */
   struct Input input;
   input.is_ready_to_die = 0;
@@ -82,7 +85,7 @@ int main(int argc, char *argv[])
   memory.index = 0;
 
   /* Introduction. */
-  printf("Welcome to C Console Calculator! Please enter what you want to calculate. Type \"=\" or \"quit\" "
+  printf("Welcome to C Console Calculator! Please enter what you want to calculate. Type \"quit\" "
   "to get subtotal and quit. If you wish to see brief Help, you may launch program with \"h\" argument, like so: "
   "\"./calc h\".\n***\n"); // пробел между строками - конкатенация
 
@@ -99,25 +102,29 @@ int main(int argc, char *argv[])
     /* 2. Обработка некорректного input. */
     if ( 
     /* Ветка срабатывает, если тип input неизвестен, т.е. '\0' */
-    !input.type ||
+    (!input.type && 
+      (error_code = 1)) ||
 
     /* ИЛИ: если в ходе вычислений был получен NaN или Infinity. */
-    ( type_is_operator(input.type) && is_bad_num(input.tmp) ) ||
+    ( (type_is_operator(input.type) && is_bad_num(input.tmp)) && 
+      (error_code = 2) ) ||
 
     /* ИЛИ: если был введен оператор 'r', а потом сразу число. */
-    ( type_is_num(input.type) && input.opr == 'r' ) ||
+    ( (type_is_num(input.type) && input.opr == 'r') && 
+      (error_code = 3) ) ||
 
     /* ИЛИ: если ввод начинается *не* с числа (хотя может начинаться с ключевого слова). И: */
     /* разрешается ввести другой оператор после ввода оператора. */
-    ( !type_is_keyword(input.type) && 
+    ( (!type_is_keyword(input.type) && 
       ( !type_is_num(input.type) && !(last_input.is_num || last_input.is_root || last_input.is_keyword) &&
-        !(type_is_operator(input.type) && last_input.is_operator) )))
+        !(type_is_operator(input.type) && last_input.is_operator)) && 
+          (error_code = 4) )))
     {
       /* Был ли запрос на выход? Если да, прервать цикл. */
       if (input.is_ready_to_die)
         break;
 
-      print_error(&input_pt, input, memory);
+      print_error(&input_pt, input, memory, error_code);
       continue;
       /* Если input некорректный, не извлекать данные из него: прервать итерацию. */
     }
@@ -127,9 +134,9 @@ int main(int argc, char *argv[])
     /* 3.1. Если тип input - 'k', извлечь ключевое слово из input. */
     if (input.type && type_is_keyword(input.type))
     {
-      input.keyword_code = get_keyword_code(&input_pt); // получить код ключевого слова: [1; 8]
+      input.keyword_code = get_keyword_code(&input_pt); // получить код ключевого слова: [1; 9]
 
-      if (input.keyword_code > 4) // команды для работы с памятью
+      if (input.keyword_code > 5) // команды для работы с памятью
       {
         /* Если указанный элемент - '\0', т.е. input имеет вид "m+". */
         if ( !(*(input_pt + 2)) && (memory.index = 1) ) {} // обработать как "m+1"
@@ -140,9 +147,10 @@ int main(int argc, char *argv[])
           shifted_input_pt = (input_pt + 2); // получить указатель, смещенный к "10"
           memory.index = (int) get_num( &shifted_input_pt, subtotal );
 
-          if (memory.index >= MAX_SIZE + 1) // anti-segmentation fault
+          if ( (memory.index >= MAX_SIZE + 1) && 
+            (error_code = 5)) // anti-segmentation fault
           {
-            print_error(&input_pt, input, memory);
+            print_error(&input_pt, input, memory, error_code);
             continue;
           }
         }
@@ -150,25 +158,29 @@ int main(int argc, char *argv[])
 
       switch (input.keyword_code)
       {
-        case 1: // "=", "quit"
+        case 1: // "quit"
           input.is_ready_to_die = 1;
           break;
 
-        case 2: // "c"
+        case 2: // "="
+          input.new_num = 0.0;
+          input.opr = '\0';
+          print_subtotal(subtotal, input, memory);
+          break;
+
+        case 3: // "c"
           subtotal = input.tmp = input.new_num = input.radicand = 0.0;
           input.opr = '\0';
           print_subtotal(subtotal, input, memory);
           break;
 
-        case 3: // "mca"
+        case 4: // "mca"
           reset_all_memcells(&memory);
-
-        case 4: // "mpa"
           print_all_memcells(&memory);
+          break;
 
-        case 5: // "mc" или "mc#"
-          memory.cells[memory.index - 1] = 0.0;
-          input.type = 'n'; // перескочить на ветку с вычислениями
+        case 5: // "mpa"
+          print_all_memcells(&memory);
           break;
 
         case 6: // "mr" или "mr#"
@@ -176,21 +188,26 @@ int main(int argc, char *argv[])
           input.type = 'n';
           break;
 
-        case 7: // "m+" или "m+#"
-          memory.cells[memory.index - 1] += input.tmp;
-          input.type = 'n';
+        case 7: // "mc" или "mc#"
+          memory.cells[memory.index - 1] = 0.0;
+          print_subtotal(subtotal, input, memory);
           break;
 
-        case 8: // "m-" или "m-#"
+        case 8: // "m+" или "m+#"
+          memory.cells[memory.index - 1] += input.tmp;
+          print_subtotal(subtotal, input, memory);
+          break;
+
+        case 9: // "m-" или "m-#"
           memory.cells[memory.index - 1] -= input.tmp;
-          input.type = 'n';
+          print_subtotal(subtotal, input, memory);
       }
     }
 
     /* 3.2. Если тип input - 'n', извлечь число из input. */
     /* Для вычислений используется 3 числа: new_num, subtotal и tmp. Здесь мы обозначаем new_num. */
     else if (input.type && type_is_num(input.type))
-        input.new_num = get_num(&input_pt, subtotal); // получаем число new_num
+      input.new_num = get_num(&input_pt, subtotal); // получаем число new_num
 
     /* 3.3. Если тип input - 'o' или 'r', извлечь оператор из input. */
     else
@@ -216,10 +233,10 @@ int main(int argc, char *argv[])
           input.tmp = do_math(subtotal, input);
 
         /* Если в ходе вычислений получили NaN или Infinity. */
-        if (is_bad_num(input.tmp))
+        if ( (is_bad_num(input.tmp)) && (error_code = 2) )
         {
           print_subtotal(subtotal, input, memory);
-          print_error(&input_pt, input, memory);
+          print_error(&input_pt, input, memory, error_code);
 
           input.tmp = subtotal;
           continue;
@@ -247,7 +264,7 @@ int main(int argc, char *argv[])
     last_input.is_num = type_is_num(input.type);
     last_input.is_root = type_is_root(input.type);
 
-    memory.index = input.keyword_code = 0;
+    memory.index = input.keyword_code = error_code = query_print_code = 0;
   }
 
   /* 6. Вывести итоговый результат. */

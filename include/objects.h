@@ -32,4 +32,5 @@ struct Memory
 {
   double cells[MAX_SIZE]; // массив ячеек для double, до MAX_SIZE шт.
   int index; // cells[index]
+  unsigned int has_value : 1;
 };

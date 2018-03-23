@@ -10,14 +10,15 @@
     (char **input_pt) уже считается ключевым словом.
     Принимает означенную строку и определяет ключевое слово, присваивая ему числовой код [1; 8]. Затем возвращает 
     данный код. Список кодов:
-      1 - "=" или "quit" (запрос на выход).
-      2 - "c", clear (сброс).
-      3 - "mca", clear all memory (обнулить все ячейки памяти).
-      4 - "mpa", print all memory (вывести на экран все занятые ячейки памяти, т.е. отличные от 0).
-      5 - "mc#", memory clear (обнулить #-ю ячейку памяти). (*)
+      1 - "=" (вывести на экран промежуточный итог).
+      2 - "quit" (запрос на выход).
+      3 - "c", clear (сброс).
+      4 - "mca", clear all memory (обнулить все ячейки памяти).
+      5 - "mpa", print all memory (вывести на экран все занятые ячейки памяти, т.е. отличные от 0).
       6 - "mr#", memory recall (получить число из #-й ячейки памяти).
-      7 - "m+#", memory + (прибавить промежуточный итог к #-й ячейке).
-      8 - "m-#", memory - (вычесть промежуточный итог из #-й ячейки).
+      7 - "mc#", memory clear (обнулить #-ю ячейку памяти). (*)
+      8 - "m+#", memory + (прибавить промежуточный итог к #-й ячейке).
+      9 - "m-#", memory - (вычесть промежуточный итог из #-й ячейки).
 
     (*)
       Команды [5; 8] могут иметь вид не "mc#" ("mc1", "mc5"), а просто "mc" - в таком случае программа по умолчанию 
@@ -32,31 +33,33 @@ int get_keyword_code(char **input_pt)
 
   switch (**input_pt)
   {
-    case '=':
     case 'q':
-      return 1; // "=" или "quit"
+      return 1; // "quit"
+
+    case '=':
+      return 2; // "="
 
     case 'c':
-      return 2; // "c"
+      return 3; // "c"
 
     case 'm':
       if (elem2 == 'c' && elem3 == 'a')
-        return 3; // "mca"
+        return 4; // "mca"
 
       else if (elem2 == 'p' && elem3 == 'a')
-        return 4; // "mpa"
-
-      else if (elem2 == 'c')
-        return 5; // "mc"
+        return 5; // "mpa"
 
       else if (elem2 == 'r')
         return 6; // "mr"
 
+      else if (elem2 == 'c')
+        return 7; // "mc"
+
       else if (elem2 == '+')
-        return 7; // "m+"
+        return 8; // "m+"
 
       else if (elem2 == '-')
-        return 8; // "m-"
+        return 9; // "m-"
   }
 }
 
@@ -357,8 +360,8 @@ int input_is_keyword(char ***input_pt)
   sample_strings[0] = "=";
   sample_strings[1] = "quit";
   sample_strings[2] = "c";
-  sample_strings[3] = "mc";
-  sample_strings[4] = "mr";
+  sample_strings[3] = "mr";
+  sample_strings[4] = "mc";
   sample_strings[5] = "m+";
   sample_strings[6] = "m-";
   sample_strings[7] = "mca";
