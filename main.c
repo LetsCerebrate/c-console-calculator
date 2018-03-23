@@ -4,23 +4,20 @@
 
   Порядок работы цикла программы.
 
-  1. Итеративно запрашивается input (*).
+  1. Итеративно запрашивается input.
   2. input обрабатывается программой.
-    2.1. input'у определяется тип (**).
+    2.1. input'у определяется тип (*).
     2.2. Проверяется, корректный ли input. 
       - Если некорректный, итерация сбрасывается (continue), и данный пункт становится последним.
       - Если корректный, программа переходит к следующему пункту.
-  3. Из input извлекаются данные. Программа получает операнды и операторы для вычислений.
+  3. Из input извлекаются данные. Программа получает операнды и операторы для вычислений или команду.
   4. Производятся вычисления. Выводится промежуточный итог.
-  5. Следующей итерации передаются необходимые данные о текущей.
+  5. Совершаются необходимые приготовления к приему следующего input'а. 
   6. Цикл завершается. Выводится итоговый результат.
 
   (*)
-  Ввод "=" или "quit" обрабатывается особо - такой input означает, что цикл нужно завершить.
-
-  (**)
   Типы input:
-    'x' (exit / запрос на выход), строка. Это input "=" или "quit"
+    'k' (keyword / ключевое слово), строка. Это input "=", "quit", "c", а также команды для работы с памятью.
     'n' (number / число), double. Пример input'а: 10.0
     'o' (operator / мат. бинарный оператор), char. Пример input'а: '+'
     'r' (root (sqrt) / квадратный корень), char. Это input 'r'
@@ -28,7 +25,7 @@
 
   Справка.
   - Функция main может принимать первый аргумент "h" (help). Если запустить программу с данным аргументом, на 
-  экран будет  выведена краткая справка.
+  экран будет выведена краткая справка.
 
   Подробнее о программе - в файле README.md.
 */
@@ -49,19 +46,19 @@
 
 int main(int argc, char *argv[])
 {
-  /* 0. Вывод справки. */
+  /* Вывод справки. */
   if ( (argc > 1) && (*(argv[1]) == 'h') )
   {
     print_help();
     return 0; // если вызвана справка, калькуляцию не предлагать
   }
 
-  /* 1. Объекты. */
+  /* Объекты. */
   char *input_pt = NULL, // input хранится в статической переменной
     *shifted_input_pt = NULL;
   double subtotal = 0.0; // промежуточный итог и итоговый результат
 
-  /* input - структура для данных об input. */
+  /* input - данные об input. */
   struct Input input;
   input.is_ready_to_die = 0;
   input.keyword_code = 0;
@@ -71,36 +68,33 @@ int main(int argc, char *argv[])
   input.type = '\0'; // тип значения текущего input: 'x', 'n', 'o', 'r' или '\0'
   input.radicand = 0.0; // подкоренное выражение; для корректного вывода вычислений с участием корня
 
-  /* last_input - структура для состояний о предыдущем input. */
-  /* Состояния необходимы для определения некорректного input. */
+  /* last_input - состояния о предыдущем input. */
+  /* Необходимы для определения некорректного input. */
   struct Input last_input;
   last_input.is_keyword = 0;
   last_input.is_num = 0;
   last_input.is_operator = 0;
   last_input.is_root = 0;
 
-  /* Memory - структура для хранения данных о работе с памятью калькулятора. */
+  /* Memory - данные о работе с памятью калькулятора. */
   struct Memory memory;
   memory.cells;
   memory.index = 0;
-  memory.need_recall = 0;
-
-  // printf("%d", sizeof(memory.cells)); // 160 == 20 cells * 8 bytes
 
   /* Introduction. */
   printf("Welcome to C Console Calculator! Please enter what you want to calculate. Type \"=\" or \"quit\" "
   "to get subtotal and quit. If you wish to see brief Help, you may launch program with \"h\" argument, like so: "
   "\"./calc h\".\n***\n"); // пробел между строками - конкатенация
 
-  reset_all_memcells(&memory);
+  reset_all_memcells(&memory); // инициализировать ячейки памяти - обнулить (по умолчанию они хранят garbage values)
 
-  /* 2. Основная часть. */
+  /* Основная часть. */
   while (1)
   {
     /* 1. Запрос input. */
     /* А также определение типа input. */
     input_pt = query_input();
-    input.type = identify_input(&input_pt, subtotal, input); // получаем 'x', 'n', 'o', 'r' или '\0'
+    input.type = identify_input(&input_pt, subtotal, input); // получаем 'k', 'n', 'o', 'r' или '\0'
 
     /* 2. Обработка некорректного input. */
     if ( 
@@ -113,7 +107,7 @@ int main(int argc, char *argv[])
     /* ИЛИ: если был введен оператор 'r', а потом сразу число. */
     ( type_is_num(input.type) && input.opr == 'r' ) ||
 
-    /* Если ввод начинается *не* с числа (но может начинаться с ключевого слова). И: */
+    /* ИЛИ: если ввод начинается *не* с числа (хотя может начинаться с ключевого слова). И: */
     /* разрешается ввести другой оператор после ввода оператора. */
     ( !type_is_keyword(input.type) && 
       ( !type_is_num(input.type) && !(last_input.is_num || last_input.is_root || last_input.is_keyword) &&
@@ -128,26 +122,22 @@ int main(int argc, char *argv[])
       /* Если input некорректный, не извлекать данные из него: прервать итерацию. */
     }
 
-
-    // memory.need_recall = check_if_memrec_needed(&input_pt); // была ли введена команда "mr"?
-
-
-
-
     /* 3. Извлечение данных из корректного input. */
 
-    /* # ? Если тип input - 'k', извлечь ключевое слово из input. */
+    /* 3.1. Если тип input - 'k', извлечь ключевое слово из input. */
     if (input.type && type_is_keyword(input.type))
     {
       input.keyword_code = get_keyword_code(&input_pt); // получить код ключевого слова: [1; 8]
 
-      if (input.keyword_code > 4)
+      if (input.keyword_code > 4) // команды для работы с памятью
       {
         /* Если указанный элемент - '\0', т.е. input имеет вид "m+". */
         if ( !(*(input_pt + 2)) && (memory.index = 1) ) {} // обработать как "m+1"
-        else // если это, например, '1'
+
+        /* Если input имеет вид "m+#": например, "m+10". */
+        else
         {
-          shifted_input_pt = (input_pt + 2); // если input - строка "m+10", передать указатель, смещенный к "10"
+          shifted_input_pt = (input_pt + 2); // получить указатель, смещенный к "10"
           memory.index = (int) get_num( &shifted_input_pt, subtotal );
 
           if (memory.index >= MAX_SIZE + 1) // anti-segmentation fault
@@ -176,51 +166,40 @@ int main(int argc, char *argv[])
         case 4: // "mpa"
           print_all_memcells(&memory);
 
-        case 5: // "mc"
+        case 5: // "mc" или "mc#"
           memory.cells[memory.index - 1] = 0.0;
           input.type = 'n'; // перескочить на ветку с вычислениями
           break;
 
-        case 6: // "mr"
+        case 6: // "mr" или "mr#"
           input.new_num = memory.cells[memory.index - 1];
           input.type = 'n';
           break;
 
-        case 7: // "m+"
+        case 7: // "m+" или "m+#"
           memory.cells[memory.index - 1] += input.tmp;
           input.type = 'n';
           break;
 
-        case 8: // "m-"
+        case 8: // "m-" или "m-#"
           memory.cells[memory.index - 1] -= input.tmp;
           input.type = 'n';
       }
     }
 
-
-    /* 3.1. Если тип input - 'n', извлечь число из input. */
+    /* 3.2. Если тип input - 'n', извлечь число из input. */
     /* Для вычислений используется 3 числа: new_num, subtotal и tmp. Здесь мы обозначаем new_num. */
     else if (input.type && type_is_num(input.type))
-    {
-      /* В случае команды MR. */
-      // if (memory.need_recall)
-      // {
-      //   input.new_num = memory.cells[memory.index];
-      //   memory.need_recall = 0;
-      // }
-      // /* Обычный input. */
-      // else
-        input.new_num = get_num(&input_pt, subtotal); // ввод числа
-    }
+        input.new_num = get_num(&input_pt, subtotal); // получаем число new_num
 
-    /* 3.2. Если тип input - 'o' или 'r', извлечь оператор из input. */
+    /* 3.3. Если тип input - 'o' или 'r', извлечь оператор из input. */
     else
       input.opr = get_operator(&input_pt); // получаем оператор
 
     /* 4. Обработка извлеченных данных. */
 
-    /* 4.1 Если input имеет тип 'n' или 'r'. */
-    if (input.type && (type_is_num(input.type) || type_is_root(input.type)))
+    /* 4.1. Если input имеет тип 'n' или 'r'. */
+    if ( input.type && (type_is_num(input.type) || type_is_root(input.type)) )
     {
       /* 1. "Инициализация" промежуточного итога. */
       /* Производится только 1 раз за цикл (очевидно): на этапе, когда поступает 1-й new_num. */
@@ -248,33 +227,21 @@ int main(int argc, char *argv[])
       }
 
       /* 3. Вывести на экран вычисления. */
-      if (type_is_num(input.type))
-        print_subtotal(subtotal, input, memory);
-      else if (type_is_root(input.type))
-        print_subtotal(input.radicand, input, memory); // sqrt: время для radicand
+      if ( type_is_num(input.type) )
+        print_subtotal( subtotal, input, memory );
+      else if ( type_is_root(input.type) )
+        print_subtotal( input.radicand, input, memory ); // sqrt: время для radicand
     }
 
     /* 4.2. Если input имеет тип 'o'. */
     else if (input.type && type_is_operator(input.type))
       subtotal = input.tmp;
 
-
-
-// printf("| | 1. tmp? %f\n", input.tmp);
-// printf("| | 2. subtotal? %f\n", subtotal);
-// printf("| | 3. new_num? %f\n", input.new_num);
-// printf("| | 4. opr? %c\n", input.opr);
-// printf("| | 5. type? %c\n", input.type);  
-
-
-
-
-
     /* Был ли запрос на выход? Если да, прервать цикл. */
     if (input.is_ready_to_die)
       break;
 
-    /* 5. Данные о текущем input для обработки следующего. */
+    /* 5. Приготовления к следующему input. */
     last_input.is_keyword = type_is_keyword(input.type);
     last_input.is_operator = type_is_operator(input.type);
     last_input.is_num = type_is_num(input.type);

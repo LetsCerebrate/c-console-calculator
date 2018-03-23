@@ -1,49 +1,75 @@
 /* Функции для работы с input. */
 
+/*
+  int get_keyword_code(char **input_pt);
 
+  Стек:
+    main / get_keyword_code
+
+  Функция get_keyword_code.
+    (char **input_pt) уже считается ключевым словом.
+    Принимает означенную строку и определяет ключевое слово, присваивая ему числовой код [1; 8]. Затем возвращает 
+    данный код. Список кодов:
+      1 - "=" или "quit" (запрос на выход).
+      2 - "c", clear (сброс).
+      3 - "mca", clear all memory (обнулить все ячейки памяти).
+      4 - "mpa", print all memory (вывести на экран все занятые ячейки памяти, т.е. отличные от 0).
+      5 - "mc#", memory clear (обнулить #-ю ячейку памяти). (*)
+      6 - "mr#", memory recall (получить число из #-й ячейки памяти).
+      7 - "m+#", memory + (прибавить промежуточный итог к #-й ячейке).
+      8 - "m-#", memory - (вычесть промежуточный итог из #-й ячейки).
+
+    (*)
+      Команды [5; 8] могут иметь вид не "mc#" ("mc1", "mc5"), а просто "mc" - в таком случае программа по умолчанию 
+      обращается к 1-й ячейке памяти.
+*/
 int get_keyword_code(char **input_pt)
 {
   int cell_ind = 0;
   register int count;
   char elem2 = *((*input_pt) + 1),
     elem3 = *((*input_pt) + 2);
-  // char start = *input_pt;
-
-  // cell_ind <= MAX_SIZE
 
   switch (**input_pt)
   {
     case '=':
     case 'q':
-      return 1; // q|uit
+      return 1; // "=" или "quit"
 
     case 'c':
-      return 2; // c|lear subtotal
+      return 2; // "c"
 
-    case 'm': // m|+10
-      // if ( is_digit(elem3) // 3-й символ строки - цифра?
-        // cell_ind = (int) get_num( (*input_pt) + 2, NULL ); // если input - "m+10", передать указатель, смещенный к 10
+    case 'm':
       if (elem2 == 'c' && elem3 == 'a')
-        return 3; // mca - clear all memory
+        return 3; // "mca"
 
       else if (elem2 == 'p' && elem3 == 'a')
-        return 4; // mpa - print all memory
+        return 4; // "mpa"
 
       else if (elem2 == 'c')
-        return 5; // mc - memory clear
+        return 5; // "mc"
 
       else if (elem2 == 'r')
-        return 6; // mr - memory recall
+        return 6; // "mr"
 
       else if (elem2 == '+')
-        return 7; // m+
+        return 7; // "m+"
 
       else if (elem2 == '-')
-        return 8; // m-
+        return 8; // "m-"
   }
 }
 
 
+/*   
+  void reset_all_memcells(struct Memory *memory);
+
+  Стек:
+    main / reset_all_memcells
+
+  Функция reset_all_memcells.
+    Обнуляет все доступные ячейки памяти.
+*/
 void reset_all_memcells(struct Memory *memory)
 {
   register int i;
@@ -53,8 +79,6 @@ void reset_all_memcells(struct Memory *memory)
 
   return;
 }
-
-
 
 
 /*   
@@ -309,14 +333,24 @@ double get_num(char **input_pt, double subtotal)
 }
 
 
+/* 
+  int input_is_keyword(char ***input_pt);
+
+  Стек:
+    main / identify_input / input_is_keyword 
+
+  Функция input_is_keyword.
+    Если (char ***input_pt) - ключевое слово, возвращает 1.
+    В противном случае возвращает 0.
+*/
 int input_is_keyword(char ***input_pt)
 {
   /* 1. Объекты. */
   char input_str[MAX_SIZE]; // "mc10"
   char input_str_lpart[MAX_SIZE]; // подстрока input_str - часть с буквами
 
-  struct Input state;
-  state.is_equal = 0;
+  struct Input strings;
+  strings.are_identical = 0;
 
   /* Список ключевых слов. */
   char *sample_strings[SAMPLE_ARR_SIZE];
@@ -340,9 +374,9 @@ int input_is_keyword(char ***input_pt)
   /* 2.1. 1-й символ строки: '=', 'q', 'c' или 'm'? */
   for (i = 0; i < SAMPLE_ARR_SIZE; i++)
     if ( ( ***input_pt == sample_strings[i][0] ) &&
-      (state.is_equal = 1) ) {} // если нет, то дальше и проверять не стоит
+      (strings.are_identical = 1) ) {} // если нет, то дальше и проверять не стоит
 
-  if (!state.is_equal)
+  if (!strings.are_identical)
     return 0;
 
   /* 2.2. Получить строку input_str из текущего input'а для дальнейших испытаний. */
@@ -364,13 +398,13 @@ int input_is_keyword(char ***input_pt)
   /* 2.3. Если input - "=", "quit" или "c". */
   if (elem != 'm')
   {
-    state.is_equal = 0;
+    strings.are_identical = 0;
 
     for (i = 0; i < SAMPLE_ARR_SIZE; i++)
       if ( !strcmp(sample_strings[i], input_str) &&
-        (state.is_equal = 1) ) {}
+        (strings.are_identical = 1) ) {}
 
-    if (!state.is_equal)
+    if (!strings.are_identical)
       return 0;
     else
       return 1; // если input равен "=", "quit" или "c", все ok
@@ -383,7 +417,7 @@ int input_is_keyword(char ***input_pt)
 
   /* 3.1. Идентичны ли sample_str и input_str (1-я половина)? */
   /* Например, есть такой input: "mc10" (memory clear, применить к ячейке под индексом 10). */
-  state.is_equal = 0;
+  strings.are_identical = 0;
 
   /* Получить первые 2 символа, т.е. взять подстроку "mc". */
   for (i = 0; i < 2; i++)
@@ -393,14 +427,14 @@ int input_is_keyword(char ***input_pt)
 
   /* Сравнить взятую выше подстроку с sample_str. */
   for (j = 0; j < SAMPLE_ARR_SIZE; j++) // i следует приберечь для проверки остатка input_str
-    if ( !strcmp(input_str_lpart, sample_strings[j]) && (state.is_equal = 1) ) {}; 
+    if ( !strcmp(input_str_lpart, sample_strings[j]) && (strings.are_identical = 1) ) {}; 
     // здесь "mc" идентично "mc", все правильно
     
-  if (!state.is_equal)
+  if (!strings.are_identical)
     return 0;
 
   /* 3.2. Проверка на корректность "индексной" части input_str, если таковая есть. */
-  state.is_equal = 0;
+  strings.are_identical = 0;
 
   /* Присмотреться к 1-му символу. */
   if ( input_str[i] && (!is_digit(input_str[i]) || input_str[i] == ASCII_IND_ZERO))

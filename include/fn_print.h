@@ -1,19 +1,24 @@
 /* Функции для вывода данных. */
 
+/* 
+  void print_all_memcells();
+
+  Стек:
+    main / print_all_memcells
+
+  Функция print_all_memcells.
+    Выводит на экран содержимое всех занятных ячеек памяти.
+*/
 void print_all_memcells(struct Memory *memory)
 {
   register int i;
 
   for (i = 0; i < MAX_SIZE; i++)
-  {
     if (memory -> cells[i])
       printf("  Memory cell #%d has: %f\n", i + 1, memory -> cells[i]);
-  }
 
   return;
 }
-
-
 
 
 /* 
@@ -187,12 +192,12 @@ void print_subtotal(double subtotal, struct Input input, struct Memory memory)
   }
 
   /* 3. Отдельный вывод промежуточного итога и значения в 1-й ячейке памяти, если таковое отлично от 0. */
-  else if (memory.cells[0])
+  if (memory.cells[0])
   {
     if (!is_bad_num(input.tmp))
-      printf("  Memory cell #1 has: %f / Subtotal is: %f\n", memory.cells[0], input.tmp);
+      printf("  Subtotal is: %f / Memory cell #1 has: %f\n", memory.cells[0], input.tmp);
     else
-      printf("  Memory cell #1 has: %f / Subtotal is: %f\n", memory.cells[0], subtotal);
+      printf("  Subtotal is: %f / Memory cell #1 has: %f\n", memory.cells[0], subtotal);
   }
   else
   {
