@@ -39,9 +39,8 @@ void print_all_memcells(struct Memory *memory)
 void print_help(char filename[])
 {
   /* 1. Объекты. */
-  static char buff[BUFF_SIZE]; // буфер для приема содержимого файла filename
+  char buff[BUFF_SIZE]; // буфер для приема содержимого файла filename
   FILE *fp = NULL;
-
   register int count;
 
   /* 2. Попытаться открыть файл. */
@@ -69,22 +68,6 @@ void print_help(char filename[])
   }
 
   return;
-
-
-
-  // char str[BUFF_SIZE];
-  // int count = 0;
-
-  // // проверка на возможный выход за пределы BUFF_SIZE - в функции append_help_file
-  // while ( **help_content && *(*help_content)++ )
-  // {
-  //   str[count] = **help_content;
-  //   count++;
-  // }
-
-  // str[count] = '\0';
-  // printf("%s\n", str); // causes segfault
-  // return;
 }
 
 
