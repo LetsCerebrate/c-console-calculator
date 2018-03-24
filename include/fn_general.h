@@ -44,12 +44,12 @@ int is_sign(char elem)
     main / identify_input / input_is_number / is_point
 
   Функция is_point.
-    Если (char elem) - точка (символ '.'), возвращает 1. 
+    Если (char elem) - точка/запятая (символ '.' или ','), возвращает 1. 
     В противном случае возвращает 0. 
 */
 int is_point(char elem)
 {
-  if (elem == '.')
+  if (elem == '.' || elem == ',')
     return 1;
   else
     return 0;

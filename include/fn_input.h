@@ -109,7 +109,7 @@ char * query_input()
 {
   static char input[MAX_SIZE];
   scanf("%s", input);
-
+  
   return input;
 }
 
@@ -224,13 +224,14 @@ int input_is_number(char ***input_pt)
   /* 2. Перебор input. */
   register char *start = **input_pt;
 
-  if (is_percent(***input_pt))
-    return 0; // число не может начинаться с символа '%'
+  if ( is_percent(***input_pt) || 
+    (is_point(***input_pt) && !(*( (**input_pt) + 1 )) ) )
+      return 0; // число не может начинаться с символа '%'; числом также не м.б. input вида "."
 
   if (is_sign(***input_pt))
     (**input_pt)++; // если есть знак ('-' или '+'), перешагнуть его - пока никак не обрабатывать
 
-  while ( (elem = ***input_pt) != '\0')
+  while ( (elem = ***input_pt) != '\0' )
   {
     /* Если в input более одной точки '.', значит, input - не число. Вернуть 0. */
     /* Тем не менее input вроде ".2" или "2." допустим (такие числа будут интерпретироваться как 
