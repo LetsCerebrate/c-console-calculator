@@ -1,27 +1,84 @@
 /* Функции для вывода данных. */
 
 /* 
-  void print_all_memcells();
+  void print_subtotal(double subtotal, struct Input input);
 
   Стек:
-    main / print_all_memcells
+    main / print_subtotal
 
-  Функция print_all_memcells.
-    Выводит на экран содержимое всех занятных ячеек памяти.
+  Функция print_subtotal.
+    Выводит результаты вычислений, а также выражения, которые привели к означенным результатам.
 */
-void print_all_memcells(struct Memory *memory)
+void print_subtotal(double subtotal, struct Input input, struct Memory memory)
 {
-  struct Memory cell;
-  cell.has_value = 0;
-
+  /* 1. Объекты. */
+  int exp_tmp = 0; // показатель степени для операции '^'
   register int i;
 
-  for (i = 0; i < MAX_SIZE; i++)
-    if ( memory -> cells[i] && (cell.has_value = 1) )
-      printf("  Memory cell #%d has: %f\n", i + 1, memory -> cells[i]);
+  /* Если всюду нули, то и показывать нечего. */
+  /* Однако это не распространяется на команду "c" (clear). */
+  if (!subtotal && !input.tmp && !input.new_num && !input.keyword_code == 3)
+    return;
 
-  if (!cell.has_value)
-    printf("  All memory cells have 0.\n");
+  for (i = 7; i <= 9; i++) // [7; 9]
+    if (input.keyword_code == i)
+    {
+      printf("  Memory cell #%d has: %f\n", memory.index, memory.cells[memory.index - 1]);
+      return;
+    }
+
+  /* 2. Вывод на экран введенных выражений. */
+  /* 2.1. Вывод выражений, приведших к NaN или Infinity. */
+  if (is_bad_num(input.tmp))
+  {
+    /* Попытка извлечь корень из отриц. числа. */
+    if (type_is_root(input.type))
+      printf("  [%c%f] Invalid operation!\n", ASCII_IND_SQRT, input.radicand);
+
+    /* Остальное (деление на 0, в частности). */
+    else
+    {
+      if (input.opr)
+        printf("  [%f %c %f] Invalid operation!\n", subtotal, input.opr, input.new_num);
+      else
+        printf("  Invalid operation!\n");
+    }
+  }
+
+  /* 2.2. Вывод выражений с указанным оператором. */
+  else if (input.opr)
+  {
+    /* Операции с квадратным корнем. */
+    if (input.opr == 'r')
+      printf("  [%c%f = %f]\n", ASCII_IND_SQRT, subtotal, input.tmp);
+
+    /* Операция возведение в степень. */
+    else if (input.opr == '^')
+    {
+      exp_tmp = input.new_num; // 3.75 -> 3
+      printf("  [%f %c %d = %f]\n", subtotal, input.opr, exp_tmp, input.tmp);
+    }
+
+    /* Прочие операции с бинарными операторами. */
+    else
+      printf("  [%f %c %f = %f]\n", subtotal, input.opr, input.new_num, input.tmp);
+  }
+
+  /* 3. Отдельный вывод промежуточного итога и значения в 1-й ячейке памяти, если таковое отлично от 0. */
+  if (memory.cells[0])
+  {
+    if (!is_bad_num(input.tmp))
+      printf("  Subtotal is: %f / Memory cell #1 has: %f\n", input.tmp, memory.cells[0]);
+    else
+      printf("  Subtotal is: %f / Memory cell #1 has: %f\n", subtotal, memory.cells[0]);
+  }
+  else
+  {
+    if (!is_bad_num(input.tmp))
+      printf("  Subtotal is: %f\n", input.tmp);
+    else
+      printf("  Subtotal is: %f\n", subtotal);
+  }
 
   return;
 }
@@ -138,90 +195,27 @@ void print_error(char **input_pt, struct Input input, struct Memory memory, int 
 
 
 /* 
-  void print_subtotal(double subtotal, struct Input input);
+  void print_all_memcells();
 
   Стек:
-    main / print_subtotal
+    main / print_all_memcells
 
-  Функция print_subtotal.
-    Выводит результаты вычислений, а также выражения, которые привели к означенным результатам.
+  Функция print_all_memcells.
+    Выводит на экран содержимое всех занятных ячеек памяти.
 */
-void print_subtotal(double subtotal, struct Input input, struct Memory memory)
+void print_all_memcells(struct Memory *memory)
 {
-  /* 1. Объекты. */
-  int exp_tmp = 0; // показатель степени для операции '^'
+  struct Memory cell;
+  cell.has_value = 0;
+
   register int i;
 
-  /* Если всюду нули, то и показывать нечего. */
-  /* Однако это не распространяется на команду "c" (clear). */
-  if (!subtotal && !input.tmp && !input.new_num && !input.keyword_code == 3)
-    return;
+  for (i = 0; i < MAX_SIZE; i++)
+    if ( memory -> cells[i] && (cell.has_value = 1) )
+      printf("  Memory cell #%d has: %f\n", i + 1, memory -> cells[i]);
 
-  for (i = 7; i <= 9; i++) // [7; 9]
-    if (input.keyword_code == i)
-    {
-      printf("  Memory cell #%d has: %f\n", memory.index, memory.cells[memory.index - 1]);
-      return;
-    }
-
-  /* 2. Вывод на экран введенных выражений. */
-  /* 2.1. Вывод выражений, приведших к NaN или Infinity. */
-  if (is_bad_num(input.tmp))
-  {
-    /* Попытка извлечь корень из отриц. числа. */
-    if (type_is_root(input.type))
-      printf("  [%c%f] Invalid operation!\n", ASCII_IND_SQRT, input.radicand);
-
-    /* Остальное (деление на 0, в частности). */
-    else
-    {
-      if (input.opr)
-        printf("  [%f %c %f] Invalid operation!\n", subtotal, input.opr, input.new_num);
-      else
-        printf("  Invalid operation!\n");
-    }
-  }
-
-  /* 2.2. Вывод выражений с указанным оператором. */
-  else if (input.opr)
-  {
-    /* Операции с квадратным корнем. */
-    if (input.opr == 'r')
-      printf("  [%c%f = %f]\n", ASCII_IND_SQRT, subtotal, input.tmp);
-
-    /* Операция возведение в степень. */
-    else if (input.opr == '^')
-    {
-      exp_tmp = input.new_num; // 3.75 -> 3
-      printf("  [%f %c %d = %f]\n", subtotal, input.opr, exp_tmp, input.tmp);
-    }
-
-    /* Прочие операции с бинарными операторами. */
-    else
-      printf("  [%f %c %f = %f]\n", subtotal, input.opr, input.new_num, input.tmp);
-  }
-
-  /* 3. Отдельный вывод промежуточного итога и значения в 1-й ячейке памяти, если таковое отлично от 0. */
-  if (memory.cells[0])
-  {
-    if (!is_bad_num(input.tmp))
-      printf("  Subtotal is: %f / Memory cell #1 has: %f\n", input.tmp, memory.cells[0]);
-    else
-      printf("  Subtotal is: %f / Memory cell #1 has: %f\n", subtotal, memory.cells[0]);
-  }
-  else
-  {
-    if (!is_bad_num(input.tmp))
-      printf("  Subtotal is: %f\n", input.tmp);
-    else
-      printf("  Subtotal is: %f\n", subtotal);
-  }
-
-
-  // if (!is_bad_num(input.tmp))
-  //   printf("  Subtotal is: %f\n", input.tmp);
-  // else
-  //   printf("  Subtotal is: %f\n", subtotal);
+  if (!cell.has_value)
+    printf("  All memory cells have 0.\n");
 
   return;
 }

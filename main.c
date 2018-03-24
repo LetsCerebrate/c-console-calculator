@@ -65,7 +65,6 @@ int main(int argc, char *argv[])
 
   /* input - данные об input. */
   struct Input input;
-  input.is_ready_to_die = 0;
   input.keyword_code = 0;
   input.opr = '\0'; // текущий введенный оператор
   input.new_num = 0.0; // последнее введенное число
@@ -124,7 +123,7 @@ int main(int argc, char *argv[])
           (error_code = 4) )))
     {
       /* Был ли запрос на выход? Если да, прервать цикл. */
-      if (input.is_ready_to_die)
+      if (input.keyword_code == 1)
         break;
 
       print_error(&input_pt, input, memory, error_code);
@@ -161,10 +160,6 @@ int main(int argc, char *argv[])
 
       switch (input.keyword_code)
       {
-        case 1: // "quit"
-          input.is_ready_to_die = 1;
-          break;
-
         case 2: // "="
           input.new_num = 0.0;
           input.opr = '\0';
@@ -258,7 +253,7 @@ int main(int argc, char *argv[])
       subtotal = input.tmp;
 
     /* Был ли запрос на выход? Если да, прервать цикл. */
-    if (input.is_ready_to_die)
+    if (input.keyword_code == 1)
       break;
 
     /* 5. Приготовления к следующему input. */

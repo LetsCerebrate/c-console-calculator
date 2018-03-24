@@ -16,12 +16,11 @@ struct Input
   double radicand;
   double tmp;
   int keyword_code;
-  unsigned int are_identical : 1; // ?
+  unsigned int are_identical : 1;
   unsigned int has_percent : 1;
   unsigned int has_point : 1;
   unsigned int has_radical : 1;
   unsigned int has_sign : 1;
-  unsigned int is_ready_to_die : 1;
   unsigned int is_keyword : 1;
   unsigned int is_num : 1;
   unsigned int is_operator : 1;

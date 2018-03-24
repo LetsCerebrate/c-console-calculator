@@ -1,6 +1,82 @@
 /* Функции "общего назначения". */
 
 /* 
+  double pow(double num, double exp);
+
+  Функция pow.
+    Рекурсивно возводит число (double num) в степень (double exp).
+*/
+double pow(double num, double exp)
+{
+  if (exp <= 1.0)
+    return num;
+
+  else
+    return num * pow(num, exp - 1.0);
+}
+
+
+/* 
+  int is_sign(char elem);
+
+  Стек:
+    main / get_num / is_sign
+    main / identify_input / input_is_number / is_sign
+
+  Функция is_sign.
+    Если (char elem) - знак (символ '+' или '-'), возвращает 1. 
+    В противном случае возвращает 0. 
+*/
+int is_sign(char elem)
+{
+  if (elem == '+' || elem == '-')
+    return 1;
+  else
+    return 0;
+}
+
+
+/* 
+  int is_point(char elem);
+
+  Стек:
+    main / get_num / is_point
+    main / identify_input / input_is_number / is_point
+
+  Функция is_point.
+    Если (char elem) - точка (символ '.'), возвращает 1. 
+    В противном случае возвращает 0. 
+*/
+int is_point(char elem)
+{
+  if (elem == '.')
+    return 1;
+  else
+    return 0;
+}
+
+
+/* 
+  int is_percent(char elem);
+
+  Стек:
+    main / get_num / is_percent
+    main / identify_input / input_is_number / is_percent
+
+  Функция is_percent.
+    Если (char elem) - символ '%', возвращает 1. 
+    В противном случае возвращает 0. 
+*/
+int is_percent(char elem)
+{
+  if (elem == '%')
+    return 1;
+  else
+    return 0;
+}
+
+
+/* 
   int is_digit(char elem);
 
   Функция is_digit.
@@ -24,66 +100,6 @@ int is_digit(char elem)
 
 
 /* 
-  int is_sign(char elem);
-
-  Стек:
-    main / get_num / is_sign
-    main / identify_input / check_if_is_number / is_sign
-
-  Функция is_sign.
-    Если (char elem) - знак (символ '+' или '-'), возвращает 1. 
-    В противном случае возвращает 0. 
-*/
-int is_sign(char elem)
-{
-  if (elem == '+' || elem == '-')
-    return 1;
-  else
-    return 0;
-}
-
-
-/* 
-  int is_point(char elem);
-
-  Стек:
-    main / get_num / is_point
-    main / identify_input / check_if_is_number / is_point
-
-  Функция is_point.
-    Если (char elem) - точка (символ '.'), возвращает 1. 
-    В противном случае возвращает 0. 
-*/
-int is_point(char elem)
-{
-  if (elem == '.')
-    return 1;
-  else
-    return 0;
-}
-
-
-/* 
-  int is_percent(char elem);
-
-  Стек:
-    main / get_num / is_percent
-    main / identify_input / check_if_is_number / is_percent
-
-  Функция is_percent.
-    Если (char elem) - символ '%', возвращает 1. 
-    В противном случае возвращает 0. 
-*/
-int is_percent(char elem)
-{
-  if (elem == '%')
-    return 1;
-  else
-    return 0;
-}
-
-
-/* 
   double is_bad_num(double num);
 
   Функция is_bad_num.
@@ -100,51 +116,16 @@ int is_bad_num(double num)
 
 
 /* 
-  double alter_num_sign(double num);
-
-  Стек:
-    main / get_num / alter_num_sign
-    main / do_math / get_correct_exp / alter_num_sign
-    main / print_subtotal / alter_num_sign
-
-  Функция alter_num_sign.
-    Принимает (double num) и возвращает данное число с противоположным знаком.
-*/
-double alter_num_sign(double num)
-{
-  return num - (num * 2);
-}
-
-
-/* 
-  int get_str_length(char *str);
-
-  Стек:
-    main / identify_input / check_if_is_operator / get_str_length
-
-  Функция init_mem.
-    Возвращает длину строки (char *str). Самопальный вариант встроенной функции strlen.
-*/
-int get_str_length(char *str)
-{
-  int count = 0;
-
-  while (str[count] != '\0')
-    count++;
-
-  return count;
-}
-
-
-/* 
   void init_mem(char **pt, int mem_amount);
 
   Стек:
-    main / identify_input / check_if_is_operator / init_mem
+    main / identify_input / input_is_operator / init_mem
 
   Функция init_mem.
-    Выделяет указателю (char **pt) память для символов в нужном объеме (int mem_amount).
-    Прим.: функция не высвобождает память, это будет необходимо сделать отдельно.
+    Выделяет указателю (char **pt) память для символов в нужном объеме (int mem_amount). (*)
+
+  (*)
+    Функция не высвобождает память, это необходимо сделать отдельно.
 */
 void init_mem(char **pt, int mem_amount)
 {
@@ -162,51 +143,24 @@ void init_mem(char **pt, int mem_amount)
 }
 
 
-/*
-  void fill_list_pt(char **pt, char *str);
+/* 
+  int get_str_length(char *str);
 
   Стек:
-    main / identify_input / check_if_is_operator / fill_list_pt
+    main / identify_input / input_is_keyword / get_str_length
+    main / identify_input / input_is_operator / get_str_length
 
-  Функция fill_list_pt.
-    Берет строку (char *str) и присваивает ее символы указателю (char **pt) с выделенной в нужном 
-    размере памятью.
+  Функция get_str_length.
+    Возвращает длину строки (char *str). Самопальный вариант встроенной функции strlen.
 */
-void fill_list_pt(char **pt, char *str)
+int get_str_length(char *str)
 {
-  /* 1. Объекты. */
-  register int i;
-  register char *start = *pt; // запомнили положение "внутреннего" указателя до сдвига
+  int count = 0;
 
-  /* 2. Присваивание символов строки указателю: */
-  for (i = 0; str[i] != '\0'; i++)
-  {
-    **pt = str[i];
+  while (str[count] != '\0')
+    count++;
 
-    (*pt)++; // сдвигаем "внутренний" указатель
-  }
-
-  **pt = '\0'; // завершаем новую "строку" нулевым указателем
-
-  *pt = start; // сбрасываем "внутренний" указатель: смещаем с конца на первую позицию (его состояние до цикла)
-
-  return;
-}
-
-
-/* 
-  double pow(double num, double exp);
-
-  Функция pow.
-    Рекурсивно возводит число num в степень exp.
-*/
-double pow(double num, double exp)
-{
-  if (exp <= 1.0)
-    return num;
-
-  else
-    return num * pow(num, exp - 1.0);
+  return count;
 }
 
 
@@ -227,40 +181,46 @@ double get_percentage(double num, double prc)
 
 
 /*
-  Возвращает указатель 
-  В противном случае возвращает нулевой указатель.
+  void fill_list_pt(char **pt, char *str);
+
+  Стек:
+    main / identify_input / input_is_operator / fill_list_pt
+
+  Функция fill_list_pt.
+    Берет строку (char *str) и присваивает ее символы указателю (char **pt) с выделенной в нужном 
+    размере памятью.
 */
-char * append_help_file(char filename[]) // "doc/help"
+void fill_list_pt(char **pt, char *str)
 {
   /* 1. Объекты. */
-  static char buff[BUFF_SIZE]; // буфер для приема содержимого файла filename
-  static char *help_content = buff; // указатель на строку buff
-  FILE *fp = NULL;
+  register int i;
+  register char *start = *pt; // запомнили положение "внутреннего" указателя до сдвига
 
-  register int count;
-
-  /* 2. Попытаться открыть файл. */
-  fp = fopen(filename, "r");
-
-  /* 2.1. Есть такой файл? Тогда прочитать его. */
-  count = 0;
-
-  if (fp)
+  /* 2. Присваивание символов строки указателю: */
+  for (i = 0; str[i] != '\0'; i++)
   {
-    /* Левая часть условия для того, чтобы не схватить segmentation fault, если букв в файле многовато. */
-    while ( (count < sizeof(buff)) && (buff[count] = fgetc(fp)) != EOF )
-      count++;
-
-    buff[count] = '\0';
-    fclose(fp);
-  }
-  
-  /* 2.2. Файла нет? */
-  else
-  {
-    perror("Missed file");
-    return NULL;
+    **pt = str[i];
+    (*pt)++; // сдвигаем "внутренний" указатель
   }
 
-  return help_content;
+  **pt = '\0'; // завершаем новую "строку" нулевым указателем
+  *pt = start; // сбрасываем "внутренний" указатель: смещаем с конца на первую позицию (его состояние до цикла)
+
+  return;
+}
+
+
+/* 
+  double alter_num_sign(double num);
+
+  Стек:
+    main / get_num / alter_num_sign
+    main / print_subtotal / alter_num_sign
+
+  Функция alter_num_sign.
+    Принимает (double num) и возвращает данное число с противоположным знаком.
+*/
+double alter_num_sign(double num)
+{
+  return num - (num * 2);
 }
