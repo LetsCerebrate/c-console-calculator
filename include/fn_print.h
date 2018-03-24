@@ -18,12 +18,10 @@ void print_all_memcells(struct Memory *memory)
 
   for (i = 0; i < MAX_SIZE; i++)
     if ( memory -> cells[i] && (cell.has_value = 1) )
-      // if (memory -> cells[i])
-      //   cell.has_value = 1;
       printf("  Memory cell #%d has: %f\n", i + 1, memory -> cells[i]);
 
   if (!cell.has_value)
-    printf("  All cells have 0.\n");
+    printf("  All memory cells have 0.\n");
 
   return;
 }
@@ -36,13 +34,12 @@ void print_all_memcells(struct Memory *memory)
     main / print_help
 
   Функция print_help.
-    Выводит на экран содержимое файла справки.
+    Читает файл справки и выводит на экран его содержимое.
 */
-void print_help()
+void print_help(char filename[])
 {
   /* 1. Объекты. */
-  char filename[] = "doc/help",
-    buff[5000]; // буфер для приема содержимого файла filename
+  static char buff[BUFF_SIZE]; // буфер для приема содержимого файла filename
   FILE *fp = NULL;
 
   register int count;
@@ -50,7 +47,7 @@ void print_help()
   /* 2. Попытаться открыть файл. */
   fp = fopen(filename, "r");
 
-  /* 2.1. Есть такой файл? Тогда прочитать и вывести его содержимое на экран. */
+  /* 2.1. Есть такой файл? Тогда прочитать его и вывести текст на экран. */
   count = 0;
 
   if (fp)
@@ -60,18 +57,34 @@ void print_help()
       count++;
 
     buff[count] = '\0';
-
     printf("%s\n", buff);
     fclose(fp);
   }
-
+  
   /* 2.2. Файла нет? */
   else
-    printf("The needed file \"%s\" hasn't been found! You may read README.md file to get "
-    "the necessary information.\n", 
-    filename);
+  {
+    perror("Missed file");
+    exit(1);
+  }
 
   return;
+
+
+
+  // char str[BUFF_SIZE];
+  // int count = 0;
+
+  // // проверка на возможный выход за пределы BUFF_SIZE - в функции append_help_file
+  // while ( **help_content && *(*help_content)++ )
+  // {
+  //   str[count] = **help_content;
+  //   count++;
+  // }
+
+  // str[count] = '\0';
+  // printf("%s\n", str); // causes segfault
+  // return;
 }
 
 

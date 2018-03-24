@@ -1,6 +1,7 @@
 /* Объекты. */
 
 /* Константы. */
+#define BUFF_SIZE 5000 // макс. длина массива-буфера (приемника для file pointer)
 #define MAX_SIZE 20 // макс. длина обычного массива
 #define SAMPLE_ARR_SIZE 9 // длина массива sample_strings (проверка ключевых слов)
 #define ASCII_IND_ZERO 48 // индекс символа '0' в ASCII

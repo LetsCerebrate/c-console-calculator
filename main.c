@@ -49,17 +49,19 @@ int main(int argc, char *argv[])
   /* Вывод справки. */
   if ( (argc > 1) && (*(argv[1]) == 'h') )
   {
-    print_help();
+    print_help("doc/help");
     return 0; // если вызвана справка, калькуляцию не предлагать
   }
 
   /* Объекты. */
-  char *input_pt = NULL, // input хранится в статической переменной
-    *shifted_input_pt = NULL;
+  char *input_pt = NULL, // указатель на input; сама строка хранится в статической переменной
+    *shifted_input_pt = NULL; // смещенный указатель на input
+                              // для ключевых слов, которые работают с конкретными ячейками памяти 
+                              // например, если input - "m+2", будет указывать на индекс "2"
+  char *help_content = NULL; // содержимое файла справки; хранится в статической переменной
   double subtotal = 0.0; // промежуточный итог и итоговый результат
 
-  int error_code = 0,
-    query_print_code = 0;
+  int error_code = 0; // код ошибки: [1; 5]
 
   /* input - данные об input. */
   struct Input input;
@@ -84,15 +86,16 @@ int main(int argc, char *argv[])
   memory.cells;
   memory.index = 0;
 
+  reset_all_memcells(&memory); // инициализировать ячейки памяти - обнулить (избавиться от garbage values)
+
+  /* Основная часть. */
+
   /* Introduction. */
   printf("Welcome to C Console Calculator! Please enter what you want to calculate. Type \"quit\" "
   "to get subtotal and quit. If you wish to see brief Help, you may launch program with \"h\" argument, like so: "
   "\"./calc h\".\n***\n"); // пробел между строками - конкатенация
 
-  reset_all_memcells(&memory); // инициализировать ячейки памяти - обнулить (по умолчанию они хранят garbage values)
-
-  /* Основная часть. */
-  while (1)
+  while (1) // ввод "quit" останавливает цикл
   {
     /* 1. Запрос input. */
     /* А также определение типа input. */
@@ -264,7 +267,7 @@ int main(int argc, char *argv[])
     last_input.is_num = type_is_num(input.type);
     last_input.is_root = type_is_root(input.type);
 
-    memory.index = input.keyword_code = error_code = query_print_code = 0;
+    memory.index = input.keyword_code = error_code = 0;
   }
 
   /* 6. Вывести итоговый результат. */

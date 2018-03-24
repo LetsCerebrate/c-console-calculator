@@ -224,3 +224,43 @@ double get_percentage(double num, double prc)
   prc /= 100.0; // 75% -> 0.75
   return num * prc;
 }
+
+
+/*
+  Возвращает указатель 
+  В противном случае возвращает нулевой указатель.
+*/
+char * append_help_file(char filename[]) // "doc/help"
+{
+  /* 1. Объекты. */
+  static char buff[BUFF_SIZE]; // буфер для приема содержимого файла filename
+  static char *help_content = buff; // указатель на строку buff
+  FILE *fp = NULL;
+
+  register int count;
+
+  /* 2. Попытаться открыть файл. */
+  fp = fopen(filename, "r");
+
+  /* 2.1. Есть такой файл? Тогда прочитать его. */
+  count = 0;
+
+  if (fp)
+  {
+    /* Левая часть условия для того, чтобы не схватить segmentation fault, если букв в файле многовато. */
+    while ( (count < sizeof(buff)) && (buff[count] = fgetc(fp)) != EOF )
+      count++;
+
+    buff[count] = '\0';
+    fclose(fp);
+  }
+  
+  /* 2.2. Файла нет? */
+  else
+  {
+    perror("Missed file");
+    return NULL;
+  }
+
+  return help_content;
+}
