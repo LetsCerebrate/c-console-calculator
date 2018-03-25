@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
   /* Introduction. */
   printf("Welcome to C Console Calculator! Please enter what you want to calculate. Type \"quit\" "
   "to get subtotal and quit. If you wish to see brief Help, you may launch program with \"h\" argument, like so: "
-  "\"./calc h\".\n***\n"); // пробел между строками - конкатенация
+  "\"./calc h\".\n"); // пробел между строками - конкатенация
 
   while (1) // ввод "quit" останавливает цикл
   {

@@ -108,6 +108,7 @@ void reset_all_memcells(struct Memory *memory)
 char * query_input()
 {
   static char input[MAX_SIZE];
+  printf("***\n");
   scanf("%s", input);
   
   return input;

@@ -29,18 +29,18 @@ void print_subtotal(double subtotal, struct Input input, struct Memory memory, i
     {
       case 'r':
         /* Операции с квадратным корнем. */
-        printf("  [%c%f = %f]\n", ASCII_IND_SQRT, subtotal, input.tmp);
+        printf("   [%c%f = %f]\n", ASCII_IND_SQRT, subtotal, input.tmp);
         break;
 
       case '^':
         /* Операция возведение в степень. */
         exp_tmp = input.new_num; // 3.75 -> 3
-        printf("  [%f %c %d = %f]\n", subtotal, input.opr, exp_tmp, input.tmp);
+        printf("   [%f %c %d = %f]\n", subtotal, input.opr, exp_tmp, input.tmp);
         break;
 
       default:
         /* Прочие операции с бинарными операторами. */
-        printf("  [%f %c %f = %f]\n", subtotal, input.opr, input.new_num, input.tmp);
+        printf("   [%f %c %f = %f]\n", subtotal, input.opr, input.new_num, input.tmp);
     }
   }
 
@@ -49,15 +49,15 @@ void print_subtotal(double subtotal, struct Input input, struct Memory memory, i
   {
     /* Попытка извлечь корень из отриц. числа. */
     if (type_is_root(input.type))
-      printf("  [%c%f] Invalid operation!\n", ASCII_IND_SQRT, input.radicand);
+      printf("   [%c%f] Invalid operation!\n", ASCII_IND_SQRT, input.radicand);
   
     /* Остальное (деление на 0, в частности). */
     else
     {
       if (input.opr)
-        printf("  [%f %c %f] Invalid operation!\n", subtotal, input.opr, input.new_num);
+        printf("   [%f %c %f] Invalid operation!\n", subtotal, input.opr, input.new_num);
       else
-        printf("  Invalid operation!\n");
+        printf("   Invalid operation!\n");
     }
   }
 
@@ -66,7 +66,7 @@ void print_subtotal(double subtotal, struct Input input, struct Memory memory, i
     for (i = 7; i <= 9; i++) // [7; 9]
       if (input.keyword_code == i)
       {
-        printf("  Memory cell #%d has: %f\n", memory.index, memory.cells[memory.index - 1]);
+        printf("   Memory cell #%d has: %f\n", memory.index, memory.cells[memory.index - 1]);
         return;
       }
 
@@ -76,16 +76,16 @@ void print_subtotal(double subtotal, struct Input input, struct Memory memory, i
     if (memory.cells[0])
     {
       if (!is_bad_num(input.tmp))
-        printf("  Subtotal is: %f / Memory cell #1 has: %f\n", input.tmp, memory.cells[0]);
+        printf("   Subtotal is: %f / Memory cell #1 has: %f\n", input.tmp, memory.cells[0]);
       else
-        printf("  Subtotal is: %f / Memory cell #1 has: %f\n", subtotal, memory.cells[0]);
+        printf("   Subtotal is: %f / Memory cell #1 has: %f\n", subtotal, memory.cells[0]);
     }
     else
     {
       if (!is_bad_num(input.tmp))
-        printf("  Subtotal is: %f\n", input.tmp);
+        printf("   Subtotal is: %f\n", input.tmp);
       else
-        printf("  Subtotal is: %f\n", subtotal);
+        printf("   Subtotal is: %f\n", subtotal);
     }
   }
 
@@ -171,36 +171,37 @@ void print_error(char **input_pt, struct Input input, struct Memory memory, int 
   {
     case 1:
       /* Если у input неопределенный тип. */
-      printf("  Invalid input: \"%s\". Please enter something meaningful.\n", input_str);
+      printf("   Invalid input: \"%s\". Please enter something meaningful.\n", input_str);
       break;
 
     case 2:
       /* Вычисления, приведшие к NaN или Infinity. */
       if (type_is_root(input.type))
-        printf("  Invalid input: \"%s\". Input's been withdrawn. You may enter operator to continue "
+        printf("   ~~~\n   Invalid input: \"%s\". Input's been withdrawn.\n   You may enter operator to continue "
         "your calculations with subtotal shown above.\n", input_str);
       else
-        printf("  Invalid input: \"%s\". Input's been withdrawn. Please: 1) enter different number to finish "
-        "this expression, or 2) enter operator to make different expression with subtotal shown above.\n", input_str);
+        printf("   ~~~\n   Invalid input: \"%s\". Input's been withdrawn. Please: \n   1) enter different number "
+        "to finish this expression, or \n   2) enter operator to make different expression with subtotal shown "
+        "above.\n", input_str);
       break;
 
     case 3:
       /* Если после ввода 'r' вводится число. */
-      printf("  Invalid input: \"%s\". Please enter operator.\n", input_str);
+      printf("   Invalid input: \"%s\". Please enter operator.\n", input_str);
       break;
 
     case 4:
       /* Если ввод начинается с оператора или символа 'r'. */
-      printf("  Invalid input: \"%s\". Please enter number.\n", input_str);
+      printf("   Invalid input: \"%s\". Please enter number.\n", input_str);
       break;
 
     case 5:
       /* Работа с памятью калькулятора. Попытка получить доступ к элементу массива за границами последнего. */
-      printf("  No access. Overall number of available memory cells is %d.\n", MAX_SIZE);
+      printf("   No access. Overall number of available memory cells is %d.\n", MAX_SIZE);
       break;
 
     default:
-      printf("  Invalid input: \"%s\".\n", input_str);
+      printf("   Invalid input: \"%s\".\n", input_str);
   }
 
   return;
@@ -225,10 +226,10 @@ void print_all_memcells(struct Memory *memory)
 
   for (i = 0; i < MAX_SIZE; i++)
     if ( memory -> cells[i] && (cell.has_value = 1) )
-      printf("  Memory cell #%d has: %f\n", i + 1, memory -> cells[i]);
+      printf("   Memory cell #%d has: %f\n", i + 1, memory -> cells[i]);
 
   if (!cell.has_value)
-    printf("  All memory cells have 0.\n");
+    printf("   All memory cells have 0.\n");
 
   return;
 }
