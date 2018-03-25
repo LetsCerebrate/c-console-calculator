@@ -79,10 +79,12 @@ Subtotal is: 5.000000
 ***
 </pre>
 </details>
-The program also ignores input which's meaningless in the given context but this is not very exciting to see the examples of such a behavior. However, let's mention that the synthax like ```1 + 2 * 3 / 2``` (all in one line) is allowable technically. But this is not a designed feature but only a side effect. Such the syntax has no parentheses support (so there's no correct order of arithmetic operations), besides, it sometimes shows a weird behavior. The expression shown above returns:
+The program also ignores input which's meaningless in the given context but this is not very exciting to see the examples of such a behavior. However, let's mention that the synthax like <code>1 + 2 * 3 / 2</code> (all in one line) is allowable technically. But this is not a designed feature but only a side effect. Such the syntax has no parentheses support (so there's no correct order of arithmetic operations), besides, it sometimes shows a weird behavior. The expression shown above returns:
+<pre>
 [1.000000 + 2.000000 = 3.000000]
 [3.000000 * 3.000000 = 9.000000]
 [9.000000 / 2.000000 = 4.500000]
+</pre>
 
 ## How to use the memory functions
 This calculator supports a number of memory cells, up to 20 cells exactly. Here's the more detailed list of the commands:
@@ -111,27 +113,23 @@ mca
 </pre>
 <pre>
 <b>Output:</b>
-***
 Subtotal is: 2.000000
 ***
-Memory cell #1 has: 2.000000 // m+
+Memory cell #1 has: 2.000000 <b>// m+</b>
+Memory cell #2 has: 2.000000 <b>// m+2</b>
+Memory cell #2 has: 4.000000 <b>// m+2</b>
 ***
-Memory cell #2 has: 2.000000 // m+2
-***
-Memory cell #2 has: 4.000000 // m+2
-***
-Memory cell #1 has: 2.000000 // mpa
+Memory cell #1 has: 2.000000 <b>// mpa</b>
 Memory cell #2 has: 4.000000
 ***
-[2.000000 ^ 4 = 16.000000] // mr2
+[2.000000 ^ 4 = 16.000000] <b>// mr2</b>
 Subtotal is: 16.000000 / Memory cell #1 has: 2.000000
 ***
-[16.000000 / 2.000000 = 8.000000] // mr
+[16.000000 / 2.000000 = 8.000000] <b>// mr</b>
 Subtotal is: 8.000000 / Memory cell #1 has: 2.000000
 ***
-All memory cells have 0. // mca
+All memory cells have 0. <b>// mca</b>
 ***
-Subtotal is: 8.000000 // =
-***
+Subtotal is: 8.000000 <b>// =</b>
 </pre>
 </details>
