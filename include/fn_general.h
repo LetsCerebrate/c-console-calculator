@@ -136,7 +136,7 @@ void init_mem(char **pt, int mem_amount)
   if (*pt == NULL) // если выделить память не получилось
   {
     perror("Memory hasn't been allocated");
-    exit(1);
+    exit(EXIT_FAILURE);
   }
   
   return;

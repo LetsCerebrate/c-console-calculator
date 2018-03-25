@@ -50,19 +50,18 @@ int main(int argc, char *argv[])
   if ( (argc > 1) && (*(argv[1]) == 'h') )
   {
     print_help("doc/help");
-    return 0; // если вызвана справка, калькуляцию не предлагать
+    exit(EXIT_SUCCESS); // если вызвана справка, калькуляцию не предлагать
   }
 
   /* Объекты. */
   char *input_pt = NULL, // указатель на input; сама строка хранится в статической переменной
-    *shifted_input_pt = NULL; // смещенный указатель на input
+    *shifted_input_pt = NULL; // *смещенный* указатель на input
                               // для ключевых слов, которые работают с конкретными ячейками памяти 
                               // например, если input - "m+2", будет указывать на индекс "2"
   char *help_content = NULL; // содержимое файла справки; хранится в статической переменной
   double subtotal = 0.0; // промежуточный итог и итоговый результат
 
-  int error_code = 0, // код ошибки: [1; 5]
-    print_code = 0;
+  int error_code = 0; // код ошибки: [1; 5]
 
   /* input - данные об input. */
   struct Input input;
@@ -70,8 +69,8 @@ int main(int argc, char *argv[])
   input.opr = '\0'; // текущий введенный оператор
   input.new_num = 0.0; // последнее введенное число
   input.tmp = 0.0; // "временный" subtotal, "подменяет" последний в рамках одного выражения
-  input.type = '\0'; // тип значения текущего input: 'x', 'n', 'o', 'r' или '\0'
-  input.radicand = 0.0; // подкоренное выражение; для корректного вывода вычислений с участием корня
+  input.type = '\0'; // тип значения текущего input: 'k', 'n', 'o', 'r' или '\0'
+  input.radicand = 0.0; // подкоренное выражение (для типа - 'r')
 
   /* last_input - состояния о предыдущем input. */
   /* Необходимы для определения некорректного input. */
@@ -204,13 +203,13 @@ int main(int argc, char *argv[])
     }
 
     /* 3.2. Если тип input - 'n', извлечь число из input. */
-    /* Для вычислений используется 3 числа: new_num, subtotal и tmp. Здесь мы обозначаем new_num. */
+    /* Для вычислений используется 3 числа: new_num, subtotal и tmp. Здесь обозначается new_num. */
     else if (input.type && type_is_num(input.type))
-      input.new_num = get_num(&input_pt, subtotal); // получаем число new_num
+      input.new_num = get_num(&input_pt, subtotal); // получить число new_num
 
     /* 3.3. Если тип input - 'o' или 'r', извлечь оператор из input. */
     else
-      input.opr = get_operator(&input_pt); // получаем оператор
+      input.opr = get_operator(&input_pt); // получить оператор
 
     /* 4. Обработка извлеченных данных. */
 
@@ -225,51 +224,34 @@ int main(int argc, char *argv[])
       /* 2. Произвести вычисления. */
       else
       {
-        input.radicand = input.tmp; // опять же, radicand - только для корректных print'ов для выражений с sqrt
+        input.radicand = input.tmp;
         
         /* Собственно вычисления. */
         if (input.opr)
           input.tmp = do_math(subtotal, input);
 
-        /* Если в ходе вычислений получили NaN или Infinity. */
-        // if ( (is_bad_num(input.tmp)) && (error_code = 2) )
-        // {
-        //   print_subtotal(subtotal, input, memory);
-        //   print_error(&input_pt, input, memory, error_code);
-
-        //   input.tmp = subtotal;
-        //   continue;
-        // }
-
-        if ( (is_bad_num(input.tmp)) && (error_code = 2) )
+        /* Если в ходе вычислений получили NaN или Infinity, присвоить промежуточному итогу последнее 
+        корректное значение. */
+        if ( (is_bad_num(input.tmp)) && 
+        (error_code = 2) )
         {
           if (type_is_root(input.type))
             input.tmp = input.radicand;
           else
             input.tmp = subtotal;
 
-// printf("| | 1. tmp? %f\n", input.tmp);
-// printf("| | 2. subtotal? %f\n", subtotal);
-// printf("| | 3. new_num? %f\n", input.new_num);
-// printf("| | 3. radicand? %f\n", input.radicand);
-// printf("| | 4. opr? %c\n", input.opr);
-// printf("| | 5. type? %c\n", input.type);  
-
-
-
           print_subtotal(subtotal, input, memory, 2);
           print_error(&input_pt, input, memory, error_code);
 
-          // input.tmp = subtotal;
           continue;
         }
       }
 
       /* 3. Вывести на экран вычисления. */
-      if ( type_is_num(input.type) )
+      if ( type_is_num(input.type) ) // для number
         print_subtotal( subtotal, input, memory, 1 );
-      else if ( type_is_root(input.type) )
-        print_subtotal( input.radicand, input, memory, 1 ); // sqrt: время для radicand
+      else if ( type_is_root(input.type) ) // для root
+        print_subtotal( input.radicand, input, memory, 1 );
     }
 
     /* 4.2. Если input имеет тип 'o'. */
@@ -286,7 +268,7 @@ int main(int argc, char *argv[])
     last_input.is_num = type_is_num(input.type);
     last_input.is_root = type_is_root(input.type);
 
-    memory.index = input.keyword_code = error_code = print_code = 0;
+    memory.index = input.keyword_code = error_code = 0;
   }
 
   /* 6. Вывести итоговый результат. */
