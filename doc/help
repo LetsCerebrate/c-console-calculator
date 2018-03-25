@@ -1,20 +1,33 @@
-C Console Calculator
+***
+C Console Calculator.
 
-It's a simple calculator for a shell written for self-learning purposes.
+It's a console calculator written in C for self-learning purposes.
 
-
+***
 How to use. The basics.
 
-Please note that each value you want to feed the program, except the "%" symbol, must be put on a separate line (in other words, hit Enter every time you put the value to console). If you'd like to close the program, you could just type "=" or "quit". It would show the subtotal value and then would be closed.
+Please note that each value you want to feed the program, except the "%" symbol, must be put on a separate line (in other words, hit Enter every time you put the value to the command prompt). If you'd like to close the program, just type "quit". The subtotal value will be shown, and then the program will be closed.
 
-
+***
 How to use. In more details.
 
 The values are needed to be placed on the separate lines. These values can be: 
 - any numbers including percentage like "10%";
 - binary operators (addition "+", subtraction "-", multiplication "*", division "/", exponentiation "^");
 - square root "r" (there's it's kinda a postfix operator here which returns the square root of the subtotal value).
+- commands such as "=" (get the subtotal value), "quit" (close the program), "c" (reset all the calculations), and operations with the memory of the calculator: "m+", "m-", "mc", "mr", "mca" (i.e., "memory clear all" - see details below), "mpa" ("memory print all"); there's a separate chapter there describing how to use all these memory commands.
 
-This calculator is able to save the subtotal, so if you've misspelled while entering a value, feel free to overwrite it. This feature also provides safety for calculations considering mathematically incorrect results. 
+This calculator is able to save the subtotal, so if you've misspelled while entering a value, feel free to overwrite it. This feature also provides safety for calculations considering mathematically incorrect results.
 
-The program also ignores input which's meaningless in the given context.
+The program also ignores input which's meaningless in the given context but this is not very exciting to see the examples of such a behavior. However, let's mention that the synthax like "1 + 2 * 3 / 2" (all in one line) is allowable technically. But this is not a designed feature but only a side effect. Such the syntax has no parentheses support (so there's no correct order of arithmetic operations), besides, it sometimes shows a weird behavior.
+
+***
+How to use the memory functions.
+
+This calculator supports a number of memory cells, up to 20 cells exactly. Here's the more detailed list of the commands:
+- "m+" or "m+#" (where "#" is the index of the certain cell: [1; 20]): add the current subtotal to the value of #th cell. Please note that if the index hasn't been specified explicitly, it would be considered 1 automatically, so commands "m+" and "m+1" are identical.
+- "m-" or "m-#": substract the subtotal from the value of #th cell.
+- "mc" or "mc#" ("memory clear"): set the value of #th cell to 0.
+- "mr" or "mr#" ("memory recall"): recall the value from #th cell.
+- "mca" ("memory clear all"): set the values of all the cells to 0.
+- "mpa" ("memory print all"): print the values of the cells whose contents aren't 0.

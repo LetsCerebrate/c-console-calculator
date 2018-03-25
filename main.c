@@ -31,7 +31,6 @@
 */
 
 /* Директивы для препроцессора. */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -43,7 +42,6 @@
 #include "include/fn_print.h"
 
 /* Main. */
-
 int main(int argc, char *argv[])
 {
   /* Вывод справки. */
