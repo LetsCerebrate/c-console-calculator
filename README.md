@@ -88,12 +88,13 @@ The program also ignores input which's meaningless in the given context but this
 
 ## How to use the memory functions
 This calculator supports a number of memory cells, up to 20 cells exactly. Here's the more detailed list of the commands:
-* ```m+``` or ```m+#``` (where ```#``` is the index of the certain cell: ```[1; 20]```): add the current subtotal to the value of #th cell. Please note that if the index hasn't been specified explicitly, it would be considered 1 automatically, so commands ```m+``` and ```m+1``` are identical.
-* ```m-``` or ```m-#```: substract the subtotal from the value of #th cell.
-* ```mc``` or ```mc#``` ("memory clear"): set the value of #th cell to 0.
-* ```mr``` or ```mr#``` ("memory recall"): recall the value from #th cell.
+* ```m+``` or ```m+#``` (where ```#``` is the index of the certain cell: ```[1; 20]```): add the current subtotal to the value of #-th cell. Please note that if the index hasn't been specified explicitly, it would be considered 1 automatically, so commands ```m+``` and ```m+1``` are identical.
+* ```m-``` or ```m-#```: substract the subtotal from the value of #-th cell.
+* ```mc``` or ```mc#``` ("memory clear"): set the value of #-th cell to 0.
+* ```mr``` or ```mr#``` ("memory recall"): recall the value from #-th cell.
 * ```mca``` ("memory clear all"): set the values of all the cells to 0.
 * ```mpa``` ("memory print all"): print the values of the cells whose contents aren't 0.
+
 Here's an example of using those (click to expand).
 <details>
 <summary>Using memory functions</summary>
